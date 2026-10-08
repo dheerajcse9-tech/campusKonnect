@@ -16,6 +16,9 @@ import { ConversationsPage } from './pages/messages/ConversationsPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
 import { RequestDetailPage } from './pages/requests/RequestDetailPage';
 import { RequestsPage } from './pages/requests/RequestsPage';
+import { CommunityPage } from './pages/community/CommunityPage';
+import { PostDetailPage } from './pages/community/PostDetailPage';
+import { EditPostPage, NewPostPage } from './pages/community/PostFormPage';
 import { GuidelinesPage } from './pages/misc/GuidelinesPage';
 import { NotFoundPage } from './pages/misc/NotFoundPage';
 
@@ -64,6 +67,10 @@ export function App() {
           <Route path="messages" element={<ConversationsPage />} />
           <Route path="messages/:id" element={<ConversationPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="community" element={<CommunityPage />} />
+          <Route path="community/new" element={<NewPostPage />} />
+          <Route path="community/:id" element={<PostDetailPage />} />
+          <Route path="community/:id/edit" element={<EditPostPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
