@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { commentsRouter, postsRouter } from './modules/community/community.routes.js';
 import { healthRouter } from './modules/health/health.routes.js';
 import { listingsRouter } from './modules/listings/listings.routes.js';
 import { messagingRouter } from './modules/messaging/messaging.routes.js';
@@ -17,5 +18,7 @@ export function buildApiRouter(): Router {
   api.use('/requests', transactionsRouter);
   api.use('/conversations', messagingRouter);
   api.use('/notifications', notificationsRouter);
+  api.use('/posts', postsRouter);
+  api.use('/comments', commentsRouter);
   return api;
 }
