@@ -21,7 +21,7 @@ export const requireAuth: RequestHandler = async (req, _res, next) => {
     where: { id: payload.sub },
     select: { id: true, email: true, role: true, status: true },
   });
-  if (!user) throw new UnauthorizedError();
+  if (!user || user.status === 'DELETED') throw new UnauthorizedError();
   if (user.status === 'BANNED') throw new AccountBannedError();
 
   req.user = { id: user.id, email: user.email, role: user.role };

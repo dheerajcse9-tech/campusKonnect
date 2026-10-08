@@ -119,7 +119,10 @@ describe('refresh token rotation', () => {
 
   it('issues a new access token and rotates the refresh cookie', async () => {
     const cookie = await loginCookie();
-    const res = await api().post('/api/auth/refresh').set('Cookie', cookie);
+    const res = await api()
+      .post('/api/auth/refresh')
+      .set('X-Requested-With', 'fetch')
+      .set('Cookie', cookie);
     expect(res.status).toBe(200);
     expect(res.body.accessToken).toEqual(expect.any(String));
     expect(refreshCookie(res)).not.toBe(cookie);
@@ -127,26 +130,43 @@ describe('refresh token rotation', () => {
 
   it('revokes every session when a rotated token is reused', async () => {
     const original = await loginCookie();
-    const rotated = refreshCookie(await api().post('/api/auth/refresh').set('Cookie', original));
+    const rotated = refreshCookie(
+      await api()
+        .post('/api/auth/refresh')
+        .set('X-Requested-With', 'fetch')
+        .set('Cookie', original),
+    );
 
-    const replay = await api().post('/api/auth/refresh').set('Cookie', original);
+    const replay = await api()
+      .post('/api/auth/refresh')
+      .set('X-Requested-With', 'fetch')
+      .set('Cookie', original);
     expect(replay.status).toBe(401);
 
     // The legitimately rotated token was revoked too.
-    const afterTheft = await api().post('/api/auth/refresh').set('Cookie', rotated);
+    const afterTheft = await api()
+      .post('/api/auth/refresh')
+      .set('X-Requested-With', 'fetch')
+      .set('Cookie', rotated);
     expect(afterTheft.status).toBe(401);
   });
 
   it('rejects refresh without a cookie', async () => {
-    const res = await api().post('/api/auth/refresh');
+    const res = await api().post('/api/auth/refresh').set('X-Requested-With', 'fetch');
     expect(res.status).toBe(401);
   });
 
   it('logout revokes the refresh token', async () => {
     const cookie = await loginCookie();
-    const out = await api().post('/api/auth/logout').set('Cookie', cookie);
+    const out = await api()
+      .post('/api/auth/logout')
+      .set('X-Requested-With', 'fetch')
+      .set('Cookie', cookie);
     expect(out.status).toBe(204);
-    const res = await api().post('/api/auth/refresh').set('Cookie', cookie);
+    const res = await api()
+      .post('/api/auth/refresh')
+      .set('X-Requested-With', 'fetch')
+      .set('Cookie', cookie);
     expect(res.status).toBe(401);
   });
 });
@@ -170,7 +190,10 @@ describe('password reset', () => {
       .send({ token, password: 'BrandNew99' });
     expect(reset.status).toBe(200);
 
-    expect((await api().post('/api/auth/refresh').set('Cookie', cookie)).status).toBe(401);
+    expect(
+      (await api().post('/api/auth/refresh').set('X-Requested-With', 'fetch').set('Cookie', cookie))
+        .status,
+    ).toBe(401);
     const oldPw = await api()
       .post('/api/auth/login')
       .send({ email: 'forgetful@college.edu', password: DEFAULT_PASSWORD });

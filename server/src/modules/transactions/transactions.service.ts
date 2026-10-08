@@ -36,10 +36,15 @@ const requestSummarySelect = {
 
 const link = (requestId: string) => `/requests/${requestId}`;
 
-function startOfToday(): Date {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return today;
+/**
+ * Earliest acceptable rental start. Dates arrive as calendar days from browsers in
+ * other time zones (IST is UTC+5:30), so allow one day of slack around "today".
+ */
+function earliestRentalStart(): Date {
+  const date = new Date();
+  date.setUTCHours(0, 0, 0, 0);
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date;
 }
 
 export async function createRequest(actor: Actor, input: CreateRequestInput) {
@@ -58,23 +63,26 @@ export async function createRequest(actor: Actor, input: CreateRequestInput) {
     if (!input.rentStartDate || !input.rentEndDate) {
       throw new BadRequestError('Choose the dates you want to rent this item for');
     }
-    if (input.rentStartDate < startOfToday()) {
+    if (input.rentStartDate < earliestRentalStart()) {
       throw new BadRequestError('The rental cannot start in the past');
     }
   } else if (input.rentStartDate || input.rentEndDate) {
     throw new BadRequestError('Rental dates only apply to rentals');
   }
 
-  const open = await prisma.transactionRequest.findFirst({
-    where: {
-      listingId: listing.id,
-      requesterId: actor.id,
-      status: { in: [...OPEN_REQUEST_STATUSES] },
-    },
-  });
-  if (open) throw new ConflictError('You already have an open request for this item');
-
   return prisma.$transaction(async (tx) => {
+    // Serialise concurrent requests by the same student for the same listing
+    // (e.g. a double-tapped button) so the duplicate check below can't race.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`${listing.id}:${actor.id}`}))`;
+    const open = await tx.transactionRequest.findFirst({
+      where: {
+        listingId: listing.id,
+        requesterId: actor.id,
+        status: { in: [...OPEN_REQUEST_STATUSES] },
+      },
+    });
+    if (open) throw new ConflictError('You already have an open request for this item');
+
     const request = await tx.transactionRequest.create({
       data: {
         listingId: listing.id,
@@ -314,4 +322,46 @@ export async function closeOpenRequests(
     link: link(r.id),
   }));
   await notify(notifications, tx);
+}
+
+/**
+ * Cancels every open deal a user is part of (used when an account is banned or
+ * deleted), returns items reserved for them to the market and tells the other
+ * party why. Must run inside a transaction.
+ */
+export async function cancelOpenDealsForUser(tx: Tx, userId: string, why: string): Promise<void> {
+  const openDeals = await tx.transactionRequest.findMany({
+    where: {
+      status: { in: [...OPEN_REQUEST_STATUSES] },
+      OR: [{ requesterId: userId }, { sellerId: userId }],
+    },
+    include: { listing: { select: { title: true } } },
+  });
+  if (openDeals.length > 0) {
+    await tx.transactionRequest.updateMany({
+      where: { id: { in: openDeals.map((d) => d.id) } },
+      data: { status: 'CANCELLED', respondedAt: new Date() },
+    });
+    const reservedForUser = openDeals
+      .filter((d) => d.requesterId === userId && d.status === 'APPROVED')
+      .map((d) => d.listingId);
+    await tx.listing.updateMany({
+      where: { id: { in: reservedForUser }, status: 'RESERVED' },
+      data: { status: 'ACTIVE' },
+    });
+    await notify(
+      openDeals.map((d) => ({
+        userId: d.requesterId === userId ? d.sellerId : d.requesterId,
+        type: 'REQUEST_CANCELLED' as const,
+        title: `Your deal for "${d.listing.title}" was cancelled because ${why}`,
+        link: link(d.id),
+      })),
+      tx,
+    );
+  }
+  // Un-reserve the user's own listings so they are consistent if the account returns.
+  await tx.listing.updateMany({
+    where: { sellerId: userId, status: 'RESERVED' },
+    data: { status: 'ACTIVE' },
+  });
 }

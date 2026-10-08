@@ -19,6 +19,8 @@ enum Role {
 enum UserStatus {
   ACTIVE
   BANNED
+  /// Account closed by its owner; personal data has been erased.
+  DELETED
 }
 
 enum ListingType {

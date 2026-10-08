@@ -109,16 +109,16 @@ REST over JSON. Base path: `/api`. All endpoints except those under `/api/auth` 
 
 ### Admin (`/admin`, role ADMIN)
 
-| Method | Path                         | Description                           |
-| ------ | ---------------------------- | ------------------------------------- |
-| GET    | `/admin/stats`               | Dashboard counters                    |
-| GET    | `/admin/users`               | `q, status, page`                     |
-| POST   | `/admin/users/:id/ban`       | `{ reason }`                          |
-| POST   | `/admin/users/:id/unban`     |                                       |
-| GET    | `/admin/reports`             | `status, targetType, page`            |
-| POST   | `/admin/reports/:id/resolve` | `{ note?, removeContent?, banUser? }` |
-| POST   | `/admin/reports/:id/dismiss` | `{ note? }`                           |
-| POST | `/admin/listings/:id/remove` | `{ reason }`: remove a listing (soft delete, author notified) |
-| POST | `/admin/posts/:id/remove` | `{ reason }`: remove a post (soft delete, author notified) |
-| POST | `/admin/comments/:id/remove` | `{ reason }`: remove a comment (soft delete, author notified) |
-| GET    | `/admin/audit-logs`          | Paginated audit trail                 |
+| Method | Path                         | Description                                                   |
+| ------ | ---------------------------- | ------------------------------------------------------------- |
+| GET    | `/admin/stats`               | Dashboard counters                                            |
+| GET    | `/admin/users`               | `q, status, page`                                             |
+| POST   | `/admin/users/:id/ban`       | `{ reason }`                                                  |
+| POST   | `/admin/users/:id/unban`     |                                                               |
+| GET    | `/admin/reports`             | `status, targetType, page`                                    |
+| POST   | `/admin/reports/:id/resolve` | `{ note?, removeContent?, banUser? }`                         |
+| POST   | `/admin/reports/:id/dismiss` | `{ note? }`                                                   |
+| POST   | `/admin/listings/:id/remove` | `{ reason }`: remove a listing (soft delete, author notified) |
+| POST   | `/admin/posts/:id/remove`    | `{ reason }`: remove a post (soft delete, author notified)    |
+| POST   | `/admin/comments/:id/remove` | `{ reason }`: remove a comment (soft delete, author notified) |
+| GET    | `/admin/audit-logs`          | Paginated audit trail                                         |

@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { BadRequestError } from '../../lib/errors.js';
 import { currentUser, uuidParam } from '../../lib/http.js';
-import { updateProfileSchema } from './users.schemas.js';
+import { deleteAccountSchema, updateProfileSchema } from './users.schemas.js';
 import * as usersService from './users.service.js';
 
 export async function getMe(req: Request, res: Response): Promise<void> {
@@ -21,4 +21,10 @@ export async function updateAvatar(req: Request, res: Response): Promise<void> {
 export async function getProfile(req: Request, res: Response): Promise<void> {
   const { id } = uuidParam.parse(req.params);
   res.json({ user: await usersService.getPublicProfile(id) });
+}
+
+export async function deleteAccount(req: Request, res: Response): Promise<void> {
+  const { password } = deleteAccountSchema.parse(req.body);
+  await usersService.deleteAccount(currentUser(req).id, password);
+  res.status(204).end();
 }

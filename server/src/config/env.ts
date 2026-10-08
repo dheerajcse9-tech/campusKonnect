@@ -34,12 +34,40 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: emptyToUndefined,
   CLOUDINARY_API_KEY: emptyToUndefined,
   CLOUDINARY_API_SECRET: emptyToUndefined,
+  /** Number of reverse proxies in front of the API (Render/Railway: 1). Used for client IPs in rate limiting. */
+  TRUST_PROXY: z.coerce.number().int().min(0).default(1),
+});
+
+const PLACEHOLDER_SECRET = 'change-me-to-a-long-random-string-of-at-least-32-chars';
+
+/**
+ * Extra rules for production. Real users must get real emails, uploaded photos
+ * must survive redeploys (hosts like Render wipe the local disk), and secrets
+ * must not be the example values.
+ */
+const productionSchema = envSchema.superRefine((env, ctx) => {
+  if (env.NODE_ENV !== 'production') return;
+  const require = (ok: unknown, path: string, message: string) => {
+    if (!ok) ctx.addIssue({ code: 'custom', path: [path], message });
+  };
+  require(env.JWT_ACCESS_SECRET !== PLACEHOLDER_SECRET &&
+    env.JWT_ACCESS_SECRET.length >=
+      48, 'JWT_ACCESS_SECRET', 'must be a unique random secret of at least 48 characters in production');
+  require(env.RESEND_API_KEY, 'RESEND_API_KEY', 'is required in production to send verification emails');
+  require(env.CLOUDINARY_CLOUD_NAME &&
+    env.CLOUDINARY_API_KEY &&
+    env.CLOUDINARY_API_SECRET, 'CLOUDINARY_*', 'Cloudinary credentials are required in production (local disk is not persistent)');
+  require(env.APP_URL.startsWith('https://'), 'APP_URL', 'must use https in production');
+  require(env.API_URL.startsWith('https://'), 'API_URL', 'must use https in production');
+  require(env.CLIENT_ORIGIN.every((origin) =>
+    origin.startsWith('https://'),
+  ), 'CLIENT_ORIGIN', 'must only contain https origins in production');
 });
 
 export type Env = z.infer<typeof envSchema>;
 
 function loadEnv(): Env {
-  const parsed = envSchema.safeParse(process.env);
+  const parsed = productionSchema.safeParse(process.env);
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map((issue) => `  - ${issue.path.join('.')}: ${issue.message}`)

@@ -112,7 +112,11 @@ export async function getListing(listingId: string, actor: Actor) {
     select: listingDetailSelect,
   });
   const isOwner = listing?.sellerId === actor.id;
-  if (!listing || (listing.status === 'REMOVED' && !isOwner && !isAdmin(actor))) {
+  const sellerActive = listing
+    ? (await prisma.user.count({ where: { id: listing.sellerId, status: 'ACTIVE' } })) > 0
+    : false;
+  const hidden = !listing || listing.status === 'REMOVED' || !sellerActive;
+  if (!listing || (hidden && !isOwner && !isAdmin(actor))) {
     throw new NotFoundError('Listing');
   }
 

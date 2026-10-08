@@ -105,19 +105,35 @@ describe('change password', () => {
 
     const wrong = await api()
       .post('/api/auth/change-password')
+      .set('X-Requested-With', 'fetch')
       .set('Authorization', auth)
       .send({ currentPassword: 'wrong', newPassword: 'Another123' });
     expect(wrong.status).toBe(400);
 
     const ok = await api()
       .post('/api/auth/change-password')
+      .set('X-Requested-With', 'fetch')
       .set('Authorization', auth)
       .set('Cookie', thisDevice)
       .send({ currentPassword: DEFAULT_PASSWORD, newPassword: 'Another123' });
     expect(ok.status).toBe(200);
 
-    expect((await api().post('/api/auth/refresh').set('Cookie', otherDevice)).status).toBe(401);
-    expect((await api().post('/api/auth/refresh').set('Cookie', thisDevice)).status).toBe(200);
+    expect(
+      (
+        await api()
+          .post('/api/auth/refresh')
+          .set('X-Requested-With', 'fetch')
+          .set('Cookie', otherDevice)
+      ).status,
+    ).toBe(401);
+    expect(
+      (
+        await api()
+          .post('/api/auth/refresh')
+          .set('X-Requested-With', 'fetch')
+          .set('Cookie', thisDevice)
+      ).status,
+    ).toBe(200);
   });
 });
 

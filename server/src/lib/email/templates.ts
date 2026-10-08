@@ -1,5 +1,15 @@
 import type { EmailMessage } from './email.service.js';
 
+/** Escapes user-controlled text (e.g. a display name) before putting it in HTML. */
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function layout(
   heading: string,
   paragraph: string,
@@ -10,10 +20,10 @@ function layout(
 <html><body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f8fafc;padding:24px">
   <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:12px;padding:32px;border:1px solid #e2e8f0">
     <p style="font-weight:700;color:#4f46e5;letter-spacing:.05em;margin:0 0 16px">CAMPUSKONNECT</p>
-    <h1 style="font-size:20px;color:#0f172a;margin:0 0 12px">${heading}</h1>
-    <p style="color:#334155;line-height:1.5">${paragraph}</p>
-    <p style="margin:24px 0"><a href="${actionUrl}" style="background:#4f46e5;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">${actionLabel}</a></p>
-    <p style="color:#64748b;font-size:12px">If the button doesn't work, paste this link into your browser:<br>${actionUrl}</p>
+    <h1 style="font-size:20px;color:#0f172a;margin:0 0 12px">${escapeHtml(heading)}</h1>
+    <p style="color:#334155;line-height:1.5">${escapeHtml(paragraph)}</p>
+    <p style="margin:24px 0"><a href="${escapeHtml(actionUrl)}" style="background:#4f46e5;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">${escapeHtml(actionLabel)}</a></p>
+    <p style="color:#64748b;font-size:12px">If the button doesn't work, paste this link into your browser:<br>${escapeHtml(actionUrl)}</p>
   </div>
 </body></html>`;
 }

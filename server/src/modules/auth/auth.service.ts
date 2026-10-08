@@ -40,6 +40,25 @@ export function isAllowedCollegeEmail(email: string): boolean {
   );
 }
 
+let cachedDummyHash: Promise<string> | undefined;
+function dummyHash(): Promise<string> {
+  cachedDummyHash ??= hashPassword(generateToken());
+  return cachedDummyHash;
+}
+
+/**
+ * Sends an email without failing the request if the provider is down. The user
+ * can always ask for the email again, and failing only for existing accounts
+ * would reveal which emails are registered.
+ */
+async function sendSafely(message: Parameters<typeof emailService.send>[0]): Promise<void> {
+  try {
+    await emailService.send(message);
+  } catch (err) {
+    logger.error({ err, to: message.to, subject: message.subject }, 'Email delivery failed');
+  }
+}
+
 async function sendVerificationEmail(user: Pick<User, 'id' | 'email' | 'name'>): Promise<void> {
   const token = generateToken();
   await prisma.emailVerificationToken.create({
@@ -50,7 +69,7 @@ async function sendVerificationEmail(user: Pick<User, 'id' | 'email' | 'name'>):
     },
   });
   const url = `${env.APP_URL}/verify-email?token=${encodeURIComponent(token)}`;
-  await emailService.send(verificationEmail(user.email, user.name, url));
+  await sendSafely(verificationEmail(user.email, user.name, url));
 }
 
 async function issueSession(user: User): Promise<Session> {
@@ -110,8 +129,13 @@ export async function resendVerification(email: string): Promise<void> {
 
 export async function login(input: LoginInput): Promise<Session> {
   const user = await prisma.user.findUnique({ where: { email: input.email } });
-  // Same error for unknown email and wrong password, to avoid account enumeration.
-  if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
+  // Always run bcrypt, even for unknown emails, so response time doesn't reveal
+  // which accounts exist; and use the same error for both cases.
+  const passwordOk = await verifyPassword(
+    input.password,
+    user?.passwordHash ?? (await dummyHash()),
+  );
+  if (!user || !passwordOk || user.status === 'DELETED') {
     throw new UnauthorizedError('Invalid email or password');
   }
   if (user.status === 'BANNED') throw new AccountBannedError();
@@ -149,9 +173,10 @@ export async function refresh(rawToken: string | undefined): Promise<Session> {
     data: { revokedAt: now, rotatedAt: now },
   });
 
-  if (record.user.status === 'BANNED') {
+  if (record.user.status !== 'ACTIVE') {
     await revokeAllSessions(record.userId);
-    throw new AccountBannedError();
+    if (record.user.status === 'BANNED') throw new AccountBannedError();
+    throw new UnauthorizedError('Session expired, please sign in again');
   }
   return issueSession(record.user);
 }
@@ -174,7 +199,7 @@ export async function revokeAllSessions(userId: string): Promise<void> {
 /** Always succeeds from the caller's view so it cannot be used to discover accounts. */
 export async function forgotPassword(email: string): Promise<void> {
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || user.status === 'BANNED') return;
+  if (!user || user.status !== 'ACTIVE') return;
 
   const token = generateToken();
   await prisma.passwordResetToken.create({
@@ -185,7 +210,7 @@ export async function forgotPassword(email: string): Promise<void> {
     },
   });
   const url = `${env.APP_URL}/reset-password?token=${encodeURIComponent(token)}`;
-  await emailService.send(passwordResetEmail(user.email, user.name, url));
+  await sendSafely(passwordResetEmail(user.email, user.name, url));
 }
 
 export async function resetPassword(token: string, password: string): Promise<void> {
@@ -199,7 +224,11 @@ export async function resetPassword(token: string, password: string): Promise<vo
   const user = await prisma.user.findUniqueOrThrow({ where: { id: record.userId } });
   const now = new Date();
   await prisma.$transaction([
-    prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: now } }),
+    // Invalidate this and any other outstanding reset links.
+    prisma.passwordResetToken.updateMany({
+      where: { userId: record.userId, usedAt: null },
+      data: { usedAt: now },
+    }),
     prisma.user.update({
       where: { id: record.userId },
       data: {

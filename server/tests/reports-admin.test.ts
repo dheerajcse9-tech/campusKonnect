@@ -119,7 +119,14 @@ describe('banning users', () => {
     expect(banned.status).toBe(204);
 
     expect((await api().get('/api/users/me').set('Authorization', buyer.auth)).status).toBe(403);
-    expect((await api().post('/api/auth/refresh').set('Cookie', buyerCookie)).status).toBe(401);
+    expect(
+      (
+        await api()
+          .post('/api/auth/refresh')
+          .set('X-Requested-With', 'fetch')
+          .set('Cookie', buyerCookie)
+      ).status,
+    ).toBe(401);
 
     const request = await prisma.transactionRequest.findUniqueOrThrow({
       where: { id: created.body.request.id },

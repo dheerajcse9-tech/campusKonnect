@@ -27,3 +27,8 @@ export const updateProfileSchema = z
   .strict();
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1, 'Enter your password to confirm'),
+  confirm: z.literal('DELETE', { error: 'Type DELETE to confirm' }),
+});

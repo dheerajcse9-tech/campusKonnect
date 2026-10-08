@@ -6,7 +6,12 @@ export const MAX_LISTING_IMAGES = 5;
 /** Keeps uploads in memory; they are validated and forwarded to the StorageService. */
 export const imageUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: MAX_IMAGE_BYTES, files: MAX_LISTING_IMAGES },
+  limits: {
+    fileSize: MAX_IMAGE_BYTES,
+    files: MAX_LISTING_IMAGES,
+    fields: 20,
+    fieldSize: 16 * 1024,
+  },
   fileFilter: (_req, file, cb) => {
     cb(null, file.mimetype.startsWith('image/'));
   },

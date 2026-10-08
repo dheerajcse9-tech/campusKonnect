@@ -4,10 +4,9 @@ import type { Actor } from '../../lib/auth-context.js';
 import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from '../../lib/errors.js';
 import { paginated, toSkipTake } from '../../lib/pagination.js';
 import { prisma } from '../../lib/prisma.js';
-import { notify, type NotificationInput } from '../notifications/notifications.service.js';
+import { notify } from '../notifications/notifications.service.js';
 import { findReportTarget } from '../reports/report-targets.js';
-import { OPEN_REQUEST_STATUSES } from '../transactions/request-state.js';
-import { closeOpenRequests } from '../transactions/transactions.service.js';
+import { cancelOpenDealsForUser, closeOpenRequests } from '../transactions/transactions.service.js';
 import type {
   ListAuditQuery,
   ListReportsQuery,
@@ -105,40 +104,7 @@ async function banUserTx(tx: Tx, actor: Actor, userId: string, reason: string): 
     data: { revokedAt: new Date() },
   });
 
-  const openDeals = await tx.transactionRequest.findMany({
-    where: {
-      status: { in: [...OPEN_REQUEST_STATUSES] },
-      OR: [{ requesterId: userId }, { sellerId: userId }],
-    },
-    include: { listing: { select: { title: true } } },
-  });
-  if (openDeals.length > 0) {
-    await tx.transactionRequest.updateMany({
-      where: { id: { in: openDeals.map((d) => d.id) } },
-      data: { status: 'CANCELLED', respondedAt: new Date() },
-    });
-    // Items reserved for the banned buyer go back on the market.
-    const reservedForBuyer = openDeals
-      .filter((d) => d.requesterId === userId && d.status === 'APPROVED')
-      .map((d) => d.listingId);
-    await tx.listing.updateMany({
-      where: { id: { in: reservedForBuyer }, status: 'RESERVED' },
-      data: { status: 'ACTIVE' },
-    });
-    const notifications: NotificationInput[] = openDeals.map((d) => ({
-      userId: d.requesterId === userId ? d.sellerId : d.requesterId,
-      type: 'REQUEST_CANCELLED',
-      title: `Your deal for "${d.listing.title}" was cancelled because the other account was suspended`,
-      link: `/requests/${d.id}`,
-    }));
-    await notify(notifications, tx);
-  }
-  // The banned seller's own listings are hidden from the feed; un-reserve them so
-  // they come back in a consistent state if the ban is ever lifted.
-  await tx.listing.updateMany({
-    where: { sellerId: userId, status: 'RESERVED' },
-    data: { status: 'ACTIVE' },
-  });
+  await cancelOpenDealsForUser(tx, userId, 'the other account was suspended');
 
   await recordAudit(
     {
