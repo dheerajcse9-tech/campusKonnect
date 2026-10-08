@@ -39,7 +39,7 @@ export function AdminAuditPage() {
 
   return (
     <>
-      <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
         {data.items.map((entry) => {
           const reason = entry.metadata?.reason ?? entry.metadata?.note;
           return (
@@ -48,19 +48,17 @@ export function AdminAuditPage() {
                 <Badge tone={ACTION_TONE[entry.action] ?? 'neutral'}>
                   {entry.action.replaceAll('_', ' ').toLowerCase()}
                 </Badge>
-                <span className="text-slate-700">
+                <span className="text-fg-2">
                   by {entry.actor ? entry.actor.name : 'system (CLI)'}
                 </span>
-                <span className="ml-auto text-xs text-slate-500">
+                <span className="ml-auto text-xs text-fg-muted">
                   {formatDate(entry.createdAt)} {formatTime(entry.createdAt)}
                 </span>
               </div>
-              <p className="mt-1 font-mono text-xs text-slate-500">
+              <p className="mt-1 font-mono text-xs text-fg-muted">
                 {entry.targetType} {entry.targetId}
               </p>
-              {typeof reason === 'string' && reason && (
-                <p className="mt-1 text-slate-700">“{reason}”</p>
-              )}
+              {typeof reason === 'string' && reason && <p className="mt-1 text-fg-2">“{reason}”</p>}
             </li>
           );
         })}

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
 import { type FormEvent, type KeyboardEvent, useState } from 'react';
@@ -40,6 +41,7 @@ function PostForm({ post, defaultType }: { post?: PostDetail; defaultType: PostT
       return post ? communityApi.update(post.id, payload) : communityApi.create(payload);
     },
     onSuccess: ({ post: saved }) => {
+      toast.success(post ? 'Post updated' : 'Posted! Seniors will be notified as they reply.');
       void queryClient.invalidateQueries({ queryKey: ['posts'] });
       void queryClient.invalidateQueries({ queryKey: ['post', saved.id] });
       navigate(`/community/${saved.id}`, { replace: Boolean(post) });
@@ -90,12 +92,12 @@ function PostForm({ post, defaultType }: { post?: PostDetail; defaultType: PostT
             className={clsx(
               'rounded-xl border-2 p-3 text-left',
               type === value
-                ? 'border-brand-600 bg-brand-50'
-                : 'border-slate-200 bg-white hover:border-slate-300',
+                ? 'border-brand-600 bg-brand-500/10'
+                : 'border-line bg-surface hover:border-line-strong',
             )}
           >
             <span className="block text-sm font-semibold">{label}</span>
-            <span className="block text-xs text-slate-500">{hint}</span>
+            <span className="block text-xs text-fg-muted">{hint}</span>
           </button>
         ))}
       </div>
@@ -124,14 +126,14 @@ function PostForm({ post, defaultType }: { post?: PostDetail; defaultType: PostT
           placeholder="Give context so seniors can give you a useful answer."
         />
         <div>
-          <label htmlFor="tags" className="block text-sm font-medium text-slate-700">
-            Tags <span className="font-normal text-slate-500">(up to {MAX_TAGS})</span>
+          <label htmlFor="tags" className="block text-sm font-medium text-fg-2">
+            Tags <span className="font-normal text-fg-muted">(up to {MAX_TAGS})</span>
           </label>
-          <div className="mt-1 flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 py-1.5 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
+          <div className="mt-1 flex flex-wrap items-center gap-1.5 rounded-lg border border-line-strong bg-surface px-2 py-1.5 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/25">
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-700"
+                className="inline-flex items-center gap-1 rounded-full bg-brand-500/10 px-2 py-0.5 text-xs text-brand-700 dark:text-brand-300"
               >
                 #{tag}
                 <button
@@ -155,7 +157,7 @@ function PostForm({ post, defaultType }: { post?: PostDetail; defaultType: PostT
               />
             )}
           </div>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-fg-muted">
             Press Enter or comma to add a tag. Tags help the next student find this.
           </p>
         </div>

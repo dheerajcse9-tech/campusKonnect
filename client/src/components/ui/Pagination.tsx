@@ -16,7 +16,7 @@ export function Pagination({
       <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => onChange(page - 1)}>
         <ChevronLeft className="size-4" /> Previous
       </Button>
-      <span className="text-sm text-slate-600">
+      <span className="text-sm text-fg-muted">
         Page {page} of {totalPages}
       </span>
       <Button

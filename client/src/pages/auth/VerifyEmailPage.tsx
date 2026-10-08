@@ -35,15 +35,15 @@ export function VerifyEmailPage() {
       <div className="flex flex-col items-center py-4 text-center">
         {state.status === 'verifying' && (
           <>
-            <Spinner className="size-10 text-brand-600" />
-            <p className="mt-3 text-sm text-slate-600">Verifying your email…</p>
+            <Spinner className="size-10 text-brand-600 dark:text-brand-400" />
+            <p className="mt-3 text-sm text-fg-muted">Verifying your email…</p>
           </>
         )}
         {state.status === 'done' && (
           <>
             <CheckCircle2 className="size-12 text-emerald-500" aria-hidden="true" />
             <p className="mt-3 font-medium">Your email is verified!</p>
-            <p className="text-sm text-slate-600">Welcome to your campus community.</p>
+            <p className="text-sm text-fg-muted">Welcome to your campus community.</p>
             <ButtonLink to="/login" className="mt-6">
               Sign in
             </ButtonLink>
@@ -52,10 +52,10 @@ export function VerifyEmailPage() {
         {state.status === 'failed' && (
           <>
             <XCircle className="size-12 text-red-500" aria-hidden="true" />
-            <p className="mt-3 text-sm text-slate-600">{state.message}</p>
+            <p className="mt-3 text-sm text-fg-muted">{state.message}</p>
             <Link
               to="/check-email"
-              className="mt-6 text-sm font-medium text-brand-600 hover:underline"
+              className="mt-6 text-sm font-medium text-brand-600 dark:text-brand-400 hover:underline"
             >
               Send me a new link
             </Link>

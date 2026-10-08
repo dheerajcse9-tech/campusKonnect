@@ -23,12 +23,21 @@ function Stat({
   highlight?: boolean;
 }) {
   const body = (
-    <Card className={highlight ? 'border-red-300 p-4 ring-1 ring-red-200' : 'p-4'}>
-      <div className="flex items-center gap-2 text-sm text-slate-500">
-        <Icon className="size-4" aria-hidden="true" /> {label}
+    <Card
+      className={`p-5 transition hover:-translate-y-0.5 ${highlight ? 'border-red-500/40 ring-1 ring-red-500/20' : ''}`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-semibold text-fg-muted">{label}</span>
+        <span
+          className={`flex size-9 items-center justify-center rounded-xl text-white shadow-md ${highlight ? 'bg-gradient-to-br from-red-500 to-rose-600' : 'bg-brand-gradient'}`}
+        >
+          <Icon className="size-4" aria-hidden="true" />
+        </span>
       </div>
-      <p className="mt-2 text-3xl font-bold tabular-nums">{value.toLocaleString('en-IN')}</p>
-      {sub && <p className="mt-1 text-xs text-slate-500">{sub}</p>}
+      <p className="mt-3 font-display text-4xl font-extrabold tabular-nums">
+        {value.toLocaleString('en-IN')}
+      </p>
+      {sub && <p className="mt-1 text-xs text-fg-muted">{sub}</p>}
     </Card>
   );
   return to ? (

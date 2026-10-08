@@ -35,14 +35,14 @@ export function UserProfilePage() {
             <h1 className="text-xl font-bold">{user.name}</h1>
             <Badge tone="green">Verified student</Badge>
           </div>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-fg-muted">
             {[user.department, user.year ? `Year ${user.year}` : null]
               .filter(Boolean)
               .join(' · ') || 'Student'}{' '}
             · Joined {formatDate(user.createdAt)}
           </p>
-          {user.bio && <p className="mt-2 text-sm text-slate-700">{user.bio}</p>}
-          <p className="mt-2 text-xs text-slate-500">
+          {user.bio && <p className="mt-2 text-sm text-fg-2">{user.bio}</p>}
+          <p className="mt-2 text-xs text-fg-muted">
             {user.listings.length} active {user.listings.length === 1 ? 'listing' : 'listings'} ·{' '}
             {user.postCount} community {user.postCount === 1 ? 'post' : 'posts'}
           </p>

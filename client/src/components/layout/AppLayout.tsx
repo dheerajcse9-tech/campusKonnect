@@ -12,17 +12,18 @@ import {
   Users,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useCurrentUser, useAuth } from '../../auth/AuthContext';
 import { Avatar } from '../ui/Avatar';
 import { ButtonLink } from '../ui/Button';
 import { Logo } from './Logo';
+import { ThemeToggle } from './ThemeToggle';
 import { useUnreadCounts } from './useUnreadCounts';
 
 function CountBadge({ count }: { count: number }) {
   if (count <= 0) return null;
   return (
-    <span className="absolute -right-1.5 -top-1.5 min-w-4 rounded-full bg-red-500 px-1 text-center text-[10px] font-bold leading-4 text-white">
+    <span className="absolute -right-1.5 -top-1.5 min-w-4 rounded-full bg-gradient-to-br from-accent-500 to-rose-600 px-1 text-center text-[10px] font-bold leading-4 text-white shadow ring-2 ring-surface">
       {count > 99 ? '99+' : count}
     </span>
   );
@@ -30,8 +31,10 @@ function CountBadge({ count }: { count: number }) {
 
 const desktopLink = ({ isActive }: { isActive: boolean }) =>
   clsx(
-    'relative rounded-lg px-3 py-2 text-sm font-medium',
-    isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100',
+    'relative rounded-full px-3.5 py-2 text-sm font-semibold transition',
+    isActive
+      ? 'bg-brand-500/10 text-brand-700 dark:text-brand-300'
+      : 'text-fg-muted hover:bg-surface-3 hover:text-fg',
   );
 
 function UserMenu() {
@@ -49,7 +52,7 @@ function UserMenu() {
   }, []);
 
   const item =
-    'flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50';
+    'flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-fg-2 hover:bg-surface-2';
   return (
     <div className="relative" ref={ref}>
       <button
@@ -65,11 +68,12 @@ function UserMenu() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-30 mt-2 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
+          onClick={() => setOpen(false)}
+          className="animate-rise absolute right-0 z-30 mt-2 w-60 overflow-hidden rounded-2xl border border-line bg-surface p-1.5 shadow-2xl"
         >
-          <div className="border-b border-slate-100 px-3 py-2">
+          <div className="mb-1 border-b border-line px-3 pb-2.5 pt-1.5">
             <p className="truncate text-sm font-semibold">{user.name}</p>
-            <p className="truncate text-xs text-slate-500">{user.email}</p>
+            <p className="truncate text-xs text-fg-muted">{user.email}</p>
           </div>
           <Link to="/profile" className={item} role="menuitem">
             <User className="size-4" /> My profile
@@ -85,7 +89,7 @@ function UserMenu() {
           <button
             type="button"
             role="menuitem"
-            className={clsx(item, 'text-red-600')}
+            className={clsx(item, 'text-red-600 dark:text-red-400')}
             onClick={async () => {
               await logout();
               navigate('/login');
@@ -101,17 +105,18 @@ function UserMenu() {
 
 export function AppLayout() {
   const counts = useUnreadCounts();
+  const location = useLocation();
 
   const mobileLink = ({ isActive }: { isActive: boolean }) =>
     clsx(
       'relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium',
-      isActive ? 'text-brand-600' : 'text-slate-500',
+      isActive ? 'text-brand-600 dark:text-brand-400' : 'text-fg-muted',
     );
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
+    <div className="app-backdrop flex min-h-screen flex-col">
+      <header className="sticky top-0 z-20 border-b border-line/70 bg-surface/70 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
           <Logo />
           <nav className="ml-4 hidden items-center gap-1 md:flex" aria-label="Main">
             <NavLink to="/" end className={desktopLink}>
@@ -128,15 +133,16 @@ export function AppLayout() {
               <CountBadge count={counts.messages} />
             </NavLink>
           </nav>
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
             <div className="hidden md:block">
               <ButtonLink to="/listings/new" size="sm">
                 <Plus className="size-4" /> Sell or rent
               </ButtonLink>
             </div>
+            <ThemeToggle />
             <Link
               to="/notifications"
-              className="relative rounded-full p-2 text-slate-600 hover:bg-slate-100"
+              className="relative rounded-full p-2 text-fg-muted transition hover:bg-surface-3 hover:text-fg"
               aria-label={`Notifications (${counts.notifications} unread)`}
             >
               <Bell className="size-5" />
@@ -148,18 +154,20 @@ export function AppLayout() {
       </header>
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 md:pb-10">
-        <Outlet />
+        <div key={location.pathname} className="animate-page-in">
+          <Outlet />
+        </div>
       </main>
 
-      <footer className="hidden border-t border-slate-200 py-6 text-center text-xs text-slate-500 md:block">
+      <footer className="hidden border-t border-line/70 py-8 text-center text-xs text-fg-muted md:block">
         CampusKonnect · Built for students, by students ·{' '}
-        <Link to="/guidelines" className="underline hover:text-slate-700">
+        <Link to="/guidelines" className="underline hover:text-fg-2">
           Community guidelines
         </Link>
       </footer>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line/70 bg-surface/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
         aria-label="Main"
       >
         <NavLink to="/" end className={mobileLink}>
@@ -169,7 +177,7 @@ export function AppLayout() {
           <Users className="size-5" /> Community
         </NavLink>
         <NavLink to="/listings/new" className={mobileLink} aria-label="Sell or rent an item">
-          <span className="-mt-5 flex size-12 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg">
+          <span className="-mt-6 flex size-14 items-center justify-center rounded-2xl bg-brand-gradient text-white shadow-xl shadow-brand-600/40 ring-4 ring-canvas transition active:scale-95">
             <Plus className="size-6" />
           </span>
         </NavLink>

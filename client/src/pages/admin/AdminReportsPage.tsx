@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import clsx from 'clsx';
 import { ExternalLink, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
@@ -40,6 +41,7 @@ function ResolveDialog({
         ? adminApi.resolve(report.id, { note: note.trim() || undefined, removeContent, banUser })
         : adminApi.dismiss(report.id, note.trim() || undefined),
     onSuccess: () => {
+      toast.success(mode === 'resolve' ? 'Report resolved' : 'Report dismissed');
       void queryClient.invalidateQueries({ queryKey: ['admin'] });
       onClose();
     },
@@ -52,7 +54,7 @@ function ResolveDialog({
       title={mode === 'resolve' ? 'Take action on this report' : 'Dismiss this report'}
     >
       <div className="space-y-4">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-fg-muted">
           {TARGET_LABEL[report.targetType]}:{' '}
           <strong>{report.target?.label ?? 'deleted item'}</strong>
         </p>
@@ -93,7 +95,7 @@ function ResolveDialog({
           value={note}
           onChange={(e) => setNote(e.target.value)}
         />
-        <p className="text-xs text-slate-500">This action is recorded in the audit log.</p>
+        <p className="text-xs text-fg-muted">This action is recorded in the audit log.</p>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             Cancel
@@ -136,8 +138,8 @@ export function AdminReportsPage() {
             className={clsx(
               'rounded-full border px-3 py-1 text-sm',
               status === value
-                ? 'border-brand-600 bg-brand-50 text-brand-700'
-                : 'border-slate-300 bg-white text-slate-600',
+                ? 'border-brand-600 bg-brand-500/10 text-brand-700 dark:text-brand-300'
+                : 'border-line-strong bg-surface text-fg-muted',
             )}
           >
             {value.charAt(0) + value.slice(1).toLowerCase()}
@@ -160,7 +162,7 @@ export function AdminReportsPage() {
             {data.items.map((report) => (
               <li
                 key={report.id}
-                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                className="rounded-xl border border-line bg-surface p-4 shadow-sm"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge tone="red">{REPORT_REASON_LABEL[report.reason]}</Badge>
@@ -169,15 +171,13 @@ export function AdminReportsPage() {
                     <Badge tone="amber">{report.openReportsOnTarget} open reports on this</Badge>
                   )}
                   {report.target && !report.target.active && <Badge>Already removed</Badge>}
-                  <span className="ml-auto text-xs text-slate-500">
-                    {timeAgo(report.createdAt)}
-                  </span>
+                  <span className="ml-auto text-xs text-fg-muted">{timeAgo(report.createdAt)}</span>
                 </div>
                 <p className="mt-2 font-medium">
                   {report.target ? (
                     <Link
                       to={report.target.link}
-                      className="inline-flex items-center gap-1 hover:text-brand-700"
+                      className="inline-flex items-center gap-1 hover:text-brand-700 dark:hover:text-brand-300"
                       target="_blank"
                     >
                       {report.target.label} <ExternalLink className="size-3.5" />
@@ -186,14 +186,12 @@ export function AdminReportsPage() {
                     'Deleted item'
                   )}
                 </p>
-                {report.details && (
-                  <p className="mt-1 text-sm text-slate-700">“{report.details}”</p>
-                )}
-                <p className="mt-1 text-xs text-slate-500">
+                {report.details && <p className="mt-1 text-sm text-fg-2">“{report.details}”</p>}
+                <p className="mt-1 text-xs text-fg-muted">
                   Reported by {report.reporter.name} ({report.reporter.email})
                 </p>
                 {report.status !== 'OPEN' && (
-                  <p className="mt-2 rounded-lg bg-slate-50 p-2 text-xs text-slate-600">
+                  <p className="mt-2 rounded-lg bg-surface-2 p-2 text-xs text-fg-muted">
                     {report.status === 'RESOLVED' ? 'Resolved' : 'Dismissed'} by{' '}
                     {report.resolvedBy?.name ?? 'an admin'}
                     {report.resolvedAt ? ` ${timeAgo(report.resolvedAt)}` : ''}

@@ -25,18 +25,18 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
       onClose={onClose}
       onCancel={onClose}
       aria-labelledby="modal-title"
-      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-xl p-0 shadow-xl backdrop:bg-slate-900/50"
+      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl border border-line bg-surface p-0 text-fg shadow-2xl backdrop:bg-slate-950/60 backdrop:backdrop-blur-sm open:animate-rise"
     >
       {open && (
-        <div className="p-5">
+        <div className="p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
-            <h2 id="modal-title" className="text-lg font-semibold">
+            <h2 id="modal-title" className="text-lg font-bold">
               {title}
             </h2>
             <button
               type="button"
               onClick={onClose}
-              className="rounded p-1 text-slate-500 hover:bg-slate-100"
+              className="rounded-full p-1.5 text-fg-muted transition hover:bg-surface-3 hover:text-fg"
               aria-label="Close"
             >
               <X className="size-5" />

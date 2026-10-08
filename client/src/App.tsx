@@ -1,5 +1,8 @@
-import { BrowserRouter, Route, Routes } from 'react-router';
-import { GuestOnly, RequireAdmin, RequireAuth } from './auth/guards';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router';
+import { useAuth } from './auth/AuthContext';
+import { GuestOnly, RequireAdmin } from './auth/guards';
+import { FullPageSpinner } from './components/ui/Spinner';
+import { LandingPage } from './pages/landing/LandingPage';
 import { AppLayout } from './components/layout/AppLayout';
 import { CheckEmailPage } from './pages/auth/CheckEmailPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
@@ -29,6 +32,21 @@ import { UserProfilePage } from './pages/profile/UserProfilePage';
 import { GuidelinesPage } from './pages/misc/GuidelinesPage';
 import { NotFoundPage } from './pages/misc/NotFoundPage';
 
+/** Signed-in students get the app; visitors see the landing page at "/" and the login page elsewhere. */
+function AppShell() {
+  const { user } = useAuth();
+  const location = useLocation();
+  if (user === undefined) return <FullPageSpinner />;
+  if (!user) {
+    return location.pathname === '/' ? (
+      <LandingPage />
+    ) : (
+      <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />
+    );
+  }
+  return <AppLayout />;
+}
+
 export function App() {
   return (
     <BrowserRouter>
@@ -57,13 +75,7 @@ export function App() {
         <Route path="/guidelines" element={<GuidelinesPage />} />
 
         {/* Signed-in app */}
-        <Route
-          element={
-            <RequireAuth>
-              <AppLayout />
-            </RequireAuth>
-          }
-        >
+        <Route element={<AppShell />}>
           <Route index element={<HomePage />} />
           <Route path="listings/new" element={<NewListingPage />} />
           <Route path="listings/:id" element={<ListingDetailPage />} />

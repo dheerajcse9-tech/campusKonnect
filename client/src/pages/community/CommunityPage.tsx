@@ -1,4 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { ListSkeleton } from '../../components/ui/Skeleton';
 import clsx from 'clsx';
 import { MessageSquare, Plus, Search, Users } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
@@ -9,7 +10,6 @@ import { Avatar } from '../../components/ui/Avatar';
 import { ButtonLink } from '../../components/ui/Button';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Pagination } from '../../components/ui/Pagination';
-import { FullPageSpinner } from '../../components/ui/Spinner';
 import { EmptyState, ErrorState } from '../../components/ui/States';
 import { PostTypeBadge } from '../../features/community/PostTypeBadge';
 import { UpvoteButton } from '../../features/community/UpvoteButton';
@@ -45,7 +45,10 @@ export function CommunityPage() {
   });
 
   function update(changes: Record<string, string | undefined>) {
-    const next = new URLSearchParams(params);
+    // Build from the browser's URL, not this render's copy: the router applies
+    // navigations in a transition, so a quick second update (e.g. pick a category,
+    // then search) would otherwise be computed from stale filters.
+    const next = new URLSearchParams(window.location.search);
     for (const [key, value] of Object.entries(changes)) {
       if (value) next.set(key, value);
       else next.delete(key);
@@ -77,14 +80,14 @@ export function CommunityPage() {
             <label htmlFor="post-search" className="sr-only">
               Search the community
             </label>
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-faint" />
             <input
               id="post-search"
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search questions, e.g. electives, internships, hostel"
-              className="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              className="h-10 w-full rounded-lg border border-line-strong bg-surface pl-9 pr-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
             />
           </form>
 
@@ -99,7 +102,7 @@ export function CommunityPage() {
                   'rounded-full border px-3 py-1 text-sm font-medium',
                   query.type === tab.value
                     ? 'border-brand-600 bg-brand-600 text-white'
-                    : 'border-slate-300 bg-white text-slate-700',
+                    : 'border-line-strong bg-surface text-fg-2',
                 )}
               >
                 {tab.label}
@@ -109,7 +112,7 @@ export function CommunityPage() {
               <button
                 type="button"
                 onClick={() => update({ tag: undefined })}
-                className="rounded-full bg-brand-50 px-3 py-1 text-sm text-brand-700"
+                className="rounded-full bg-brand-500/10 px-3 py-1 text-sm text-brand-700 dark:text-brand-300"
                 aria-label={`Remove tag filter ${query.tag}`}
               >
                 #{query.tag} ×
@@ -121,7 +124,7 @@ export function CommunityPage() {
               onChange={(e) =>
                 update({ sort: e.target.value === 'newest' ? undefined : e.target.value })
               }
-              className="ml-auto h-8 rounded-lg border border-slate-300 bg-white px-2 text-sm"
+              className="ml-auto h-8 rounded-lg border border-line-strong bg-surface px-2 text-sm"
             >
               <option value="newest">Newest</option>
               <option value="top">Most upvoted</option>
@@ -129,7 +132,7 @@ export function CommunityPage() {
           </div>
 
           {posts.isPending ? (
-            <FullPageSpinner />
+            <ListSkeleton rows={5} />
           ) : posts.isError ? (
             <ErrorState error={posts.error} onRetry={() => void posts.refetch()} />
           ) : posts.data.items.length === 0 ? (
@@ -149,9 +152,9 @@ export function CommunityPage() {
                 {posts.data.items.map((post) => (
                   <li
                     key={post.id}
-                    className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                    className="rounded-xl border border-line bg-surface p-4 shadow-sm"
                   >
-                    <div className="mb-2 flex items-center gap-2 text-xs text-slate-500">
+                    <div className="mb-2 flex items-center gap-2 text-xs text-fg-muted">
                       <PostTypeBadge type={post.type} />
                       <span>
                         {post.author.name}
@@ -160,10 +163,10 @@ export function CommunityPage() {
                       </span>
                     </div>
                     <Link to={`/community/${post.id}`} className="block">
-                      <h2 className="font-semibold text-slate-900 hover:text-brand-700">
+                      <h2 className="font-semibold text-fg hover:text-brand-700 dark:hover:text-brand-300">
                         {post.title}
                       </h2>
-                      <p className="mt-1 line-clamp-2 text-sm text-slate-600">{post.body}</p>
+                      <p className="mt-1 line-clamp-2 text-sm text-fg-muted">{post.body}</p>
                     </Link>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                       <UpvoteButton
@@ -175,7 +178,7 @@ export function CommunityPage() {
                       />
                       <Link
                         to={`/community/${post.id}`}
-                        className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-sm text-slate-600 hover:bg-slate-50"
+                        className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-sm text-fg-muted hover:bg-surface-2"
                       >
                         <MessageSquare className="size-4" aria-hidden="true" />
                         {post.commentCount}{' '}
@@ -190,7 +193,7 @@ export function CommunityPage() {
                           key={tag}
                           type="button"
                           onClick={() => update({ tag })}
-                          className="text-xs text-brand-700 hover:underline"
+                          className="text-xs text-brand-700 dark:text-brand-300 hover:underline"
                         >
                           #{tag}
                         </button>
@@ -210,18 +213,18 @@ export function CommunityPage() {
 
         <aside className="hidden lg:block">
           <div className="sticky top-20 space-y-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="rounded-xl border border-line bg-surface p-4">
               <div className="flex items-center gap-3">
                 <Avatar name={me.name} url={me.avatarUrl} size="sm" />
                 <p className="text-sm font-medium">Got a doubt, {me.name.split(' ')[0]}?</p>
               </div>
-              <p className="mt-2 text-sm text-slate-600">Seniors who've been there answer here.</p>
+              <p className="mt-2 text-sm text-fg-muted">Seniors who've been there answer here.</p>
               <ButtonLink to="/community/new?type=DOUBT" size="sm" className="mt-3 w-full">
                 Ask a Senior
               </ButtonLink>
             </div>
             {tags.data && tags.data.items.length > 0 && (
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="rounded-xl border border-line bg-surface p-4">
                 <h2 className="text-sm font-semibold">Popular topics</h2>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {tags.data.items.map(({ tag, count }) => (
@@ -229,9 +232,9 @@ export function CommunityPage() {
                       key={tag}
                       type="button"
                       onClick={() => update({ tag })}
-                      className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-700 hover:bg-brand-50 hover:text-brand-700"
+                      className="rounded-full bg-surface-3 px-2.5 py-1 text-xs text-fg-2 hover:bg-brand-500/10 hover:text-brand-700 dark:hover:text-brand-300"
                     >
-                      #{tag} <span className="text-slate-400">{count}</span>
+                      #{tag} <span className="text-fg-faint">{count}</span>
                     </button>
                   ))}
                 </div>

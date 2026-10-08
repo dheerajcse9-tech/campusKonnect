@@ -96,11 +96,11 @@ export function ConversationPage() {
   const { conversation } = thread.data;
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-10rem)] max-w-2xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:h-[calc(100dvh-8rem)]">
-      <header className="flex items-center gap-3 border-b border-slate-200 p-3">
+    <div className="mx-auto flex h-[calc(100dvh-10rem)] max-w-2xl flex-col overflow-hidden rounded-xl border border-line bg-surface md:h-[calc(100dvh-8rem)]">
+      <header className="flex items-center gap-3 border-b border-line p-3">
         <Link
           to="/messages"
-          className="rounded p-1 text-slate-500 hover:bg-slate-100"
+          className="rounded p-1 text-fg-muted hover:bg-surface-3"
           aria-label="Back to messages"
         >
           <ArrowLeft className="size-5" />
@@ -114,16 +114,16 @@ export function ConversationPage() {
           <p className="truncate font-medium">{conversation.counterpart.name}</p>
           <Link
             to={`/requests/${conversation.request.id}`}
-            className="block truncate text-xs text-brand-700 hover:underline"
+            className="block truncate text-xs text-brand-700 dark:text-brand-300 hover:underline"
           >
             {conversation.listing.title}
           </Link>
         </div>
       </header>
 
-      <div className="flex-1 space-y-2 overflow-y-auto bg-slate-50 p-4" aria-live="polite">
+      <div className="flex-1 space-y-2 overflow-y-auto bg-surface-2 p-4" aria-live="polite">
         {messages.length === 0 && (
-          <p className="mx-auto max-w-xs py-8 text-center text-sm text-slate-500">
+          <p className="mx-auto max-w-xs py-8 text-center text-sm text-fg-muted">
             Say hello! Agree on a public spot on campus and a time to meet.
           </p>
         )}
@@ -133,21 +133,21 @@ export function ConversationPage() {
           const showDay = i === 0 || day !== formatDate(messages[i - 1]!.createdAt);
           return (
             <div key={message.id}>
-              {showDay && <p className="my-3 text-center text-xs text-slate-400">{day}</p>}
+              {showDay && <p className="my-3 text-center text-xs text-fg-faint">{day}</p>}
               <div className={clsx('flex', mine ? 'justify-end' : 'justify-start')}>
                 <div
                   className={clsx(
                     'max-w-[80%] whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm',
                     mine
                       ? 'rounded-br-sm bg-brand-600 text-white'
-                      : 'rounded-bl-sm bg-white text-slate-800 shadow-sm',
+                      : 'rounded-bl-sm bg-surface text-fg shadow-sm',
                   )}
                 >
                   {message.body}
                   <span
                     className={clsx(
                       'mt-0.5 block text-right text-[10px]',
-                      mine ? 'text-indigo-200' : 'text-slate-400',
+                      mine ? 'text-indigo-200' : 'text-fg-faint',
                     )}
                   >
                     {formatTime(message.createdAt)}
@@ -161,7 +161,7 @@ export function ConversationPage() {
       </div>
 
       {conversation.canSend ? (
-        <form onSubmit={onSend} className="border-t border-slate-200 p-3">
+        <form onSubmit={onSend} className="border-t border-line p-3">
           <FormError error={sendError} />
           <div className="flex items-end gap-2">
             <label htmlFor="message" className="sr-only">
@@ -180,7 +180,7 @@ export function ConversationPage() {
                 }
               }}
               placeholder="Type a message"
-              className="max-h-32 min-h-10 flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              className="max-h-32 min-h-10 flex-1 resize-none rounded-lg border border-line-strong px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
             />
             <button
               type="submit"
@@ -193,7 +193,7 @@ export function ConversationPage() {
           </div>
         </form>
       ) : (
-        <p className="border-t border-slate-200 p-3 text-center text-sm text-slate-500">
+        <p className="border-t border-line p-3 text-center text-sm text-fg-muted">
           This chat is closed because the request is no longer active.
         </p>
       )}

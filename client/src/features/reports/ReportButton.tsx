@@ -51,7 +51,7 @@ export function ReportButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 hover:text-red-600"
+        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-fg-muted hover:bg-surface-3 hover:text-red-600 dark:hover:text-red-400"
       >
         <Flag className="size-3.5" aria-hidden="true" />
         {compact ? <span className="sr-only">Report</span> : 'Report'}
@@ -59,7 +59,7 @@ export function ReportButton({
       <Modal open={open} onClose={close} title={`Report this ${NOUN[targetType]}`}>
         {mutation.isSuccess ? (
           <div className="space-y-4">
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-fg-2">
               Thank you. Our moderators will review this and you'll get a notification when it's
               handled.
             </p>

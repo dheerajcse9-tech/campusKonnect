@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
@@ -41,7 +42,7 @@ function CommentItem({
   });
 
   return (
-    <li className="rounded-xl border border-slate-200 bg-white p-4">
+    <li className="rounded-xl border border-line bg-surface p-4">
       <div className="flex items-center gap-2">
         <Avatar name={comment.author.name} url={comment.author.avatarUrl} size="sm" />
         <div className="min-w-0 text-sm">
@@ -53,7 +54,7 @@ function CommentItem({
               Author
             </Badge>
           )}
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-fg-muted">
             {[comment.author.department, comment.author.year ? `Year ${comment.author.year}` : null]
               .filter(Boolean)
               .join(' · ')}
@@ -89,7 +90,7 @@ function CommentItem({
           </div>
         </div>
       ) : (
-        <p className="mt-3 whitespace-pre-line text-sm text-slate-800">{comment.body}</p>
+        <p className="mt-3 whitespace-pre-line text-sm text-fg">{comment.body}</p>
       )}
 
       <div className="mt-3 flex items-center gap-2">
@@ -109,7 +110,7 @@ function CommentItem({
             <Button
               size="sm"
               variant="ghost"
-              className="text-red-600"
+              className="text-red-600 dark:text-red-400"
               loading={remove.isPending}
               onClick={() => remove.mutate()}
             >
@@ -143,6 +144,9 @@ export function PostDetailPage() {
   const addComment = useMutation({
     mutationFn: () => communityApi.comment(id, reply.trim()),
     onSuccess: () => {
+      toast.success(
+        data?.post.type === 'DOUBT' ? 'Answer posted. Thanks for helping!' : 'Comment posted',
+      );
       setReply('');
       refresh();
     },
@@ -169,13 +173,13 @@ export function PostDetailPage() {
     <div className="mx-auto max-w-3xl space-y-4">
       <Link
         to="/community"
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+        className="inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg"
       >
         <ArrowLeft className="size-4" /> Community
       </Link>
 
       <Card className="p-5">
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex items-center gap-2 text-xs text-fg-muted">
           <PostTypeBadge type={post.type} />
           <span>{timeAgo(post.createdAt)}</span>
         </div>
@@ -186,29 +190,27 @@ export function PostDetailPage() {
         >
           <Avatar name={post.author.name} url={post.author.avatarUrl} size="sm" />
           <span className="font-medium">{post.author.name}</span>
-          <span className="text-slate-500">
+          <span className="text-fg-muted">
             {[post.author.department, post.author.year ? `Year ${post.author.year}` : null]
               .filter(Boolean)
               .join(' · ')}
           </span>
         </Link>
-        <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-slate-800">
-          {post.body}
-        </p>
+        <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-fg">{post.body}</p>
         {post.tags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {post.tags.map((tag) => (
               <Link
                 key={tag}
                 to={`/community?tag=${encodeURIComponent(tag)}`}
-                className="text-xs text-brand-700 hover:underline"
+                className="text-xs text-brand-700 dark:text-brand-300 hover:underline"
               >
                 #{tag}
               </Link>
             ))}
           </div>
         )}
-        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4">
           <UpvoteButton
             key={`${post.id}-${post.upvoteCount}`}
             count={post.upvoteCount}
@@ -224,7 +226,7 @@ export function PostDetailPage() {
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-red-600"
+                className="text-red-600 dark:text-red-400"
                 onClick={() => setConfirmDelete(true)}
               >
                 <Trash2 className="size-3.5" /> Delete
@@ -241,7 +243,7 @@ export function PostDetailPage() {
           {post.comments.length}{' '}
           {isDoubt ? (post.comments.length === 1 ? 'answer' : 'answers') : 'comments'}
           {isDoubt && post.comments.length > 1 && (
-            <span className="ml-2 text-xs font-normal text-slate-500">Most helpful first</span>
+            <span className="ml-2 text-xs font-normal text-fg-muted">Most helpful first</span>
           )}
         </h2>
         <ul className="space-y-3">
@@ -273,9 +275,7 @@ export function PostDetailPage() {
       </Card>
 
       <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete this post?">
-        <p className="text-sm text-slate-600">
-          The post and its answers will no longer be visible.
-        </p>
+        <p className="text-sm text-fg-muted">The post and its answers will no longer be visible.</p>
         <FormError error={removePost.error} />
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setConfirmDelete(false)}>

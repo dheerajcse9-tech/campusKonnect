@@ -1,4 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Search, Users } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Link } from 'react-router';
@@ -20,6 +21,7 @@ function BanDialog({ user, onClose }: { user: AdminUser; onClose: () => void }) 
   const ban = useMutation({
     mutationFn: () => adminApi.ban(user.id, reason.trim()),
     onSuccess: () => {
+      toast.success(`${user.name} has been suspended`);
       void queryClient.invalidateQueries({ queryKey: ['admin'] });
       onClose();
     },
@@ -27,7 +29,7 @@ function BanDialog({ user, onClose }: { user: AdminUser; onClose: () => void }) 
   return (
     <Modal open onClose={onClose} title={`Suspend ${user.name}?`}>
       <div className="space-y-3">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-fg-muted">
           They will be signed out everywhere, their listings and posts will be hidden, and their
           open deals will be cancelled. You can lift the suspension later.
         </p>
@@ -73,7 +75,10 @@ export function AdminUsersPage() {
   });
   const unban = useMutation({
     mutationFn: (id: string) => adminApi.unban(id),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['admin'] }),
+    onSuccess: () => {
+      toast.success('Suspension lifted');
+      void queryClient.invalidateQueries({ queryKey: ['admin'] });
+    },
   });
 
   function onSearch(e: FormEvent) {
@@ -86,13 +91,13 @@ export function AdminUsersPage() {
     <div>
       <form onSubmit={onSearch} className="mb-4 flex flex-wrap gap-2" role="search">
         <div className="relative min-w-56 flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-faint" />
           <input
             aria-label="Search users by name or email"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search by name or email"
-            className="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm"
+            className="h-10 w-full rounded-lg border border-line-strong bg-surface pl-9 pr-3 text-sm"
           />
         </div>
         <select
@@ -102,7 +107,7 @@ export function AdminUsersPage() {
             setStatus(e.target.value);
             setPage(1);
           }}
-          className="h-10 rounded-lg border border-slate-300 bg-white px-2 text-sm"
+          className="h-10 rounded-lg border border-line-strong bg-surface px-2 text-sm"
         >
           <option value="">All users</option>
           <option value="ACTIVE">Active</option>
@@ -121,7 +126,7 @@ export function AdminUsersPage() {
         <EmptyState icon={Users} title="No users found" />
       ) : (
         <>
-          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
             {data.items.map((user) => (
               <li key={user.id} className="flex flex-wrap items-center gap-3 p-4">
                 <div className="min-w-0 flex-1">
@@ -136,8 +141,8 @@ export function AdminUsersPage() {
                       <Badge tone="amber">Unverified</Badge>
                     )}
                   </div>
-                  <p className="truncate text-sm text-slate-600">{user.email}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="truncate text-sm text-fg-muted">{user.email}</p>
+                  <p className="text-xs text-fg-muted">
                     {[user.department, user.year ? `Year ${user.year}` : null]
                       .filter(Boolean)
                       .join(' · ')}
@@ -145,14 +150,16 @@ export function AdminUsersPage() {
                     {user._count.listings} listings · {user._count.posts} posts
                   </p>
                   {user.banReason && (
-                    <p className="mt-1 text-xs text-red-700">Reason: {user.banReason}</p>
+                    <p className="mt-1 text-xs text-red-700 dark:text-red-300">
+                      Reason: {user.banReason}
+                    </p>
                   )}
                 </div>
                 {user.status === 'ACTIVE' && user.role !== 'ADMIN' && user.id !== me.id && (
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="text-red-600"
+                    className="text-red-600 dark:text-red-400"
                     aria-label={`Suspend ${user.name}`}
                     onClick={() => setBanning(user)}
                   >

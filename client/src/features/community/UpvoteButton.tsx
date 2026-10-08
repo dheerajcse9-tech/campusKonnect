@@ -53,8 +53,8 @@ export function UpvoteButton({
         className={clsx(
           'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm font-medium transition',
           state.upvoted
-            ? 'border-brand-600 bg-brand-50 text-brand-700'
-            : 'border-slate-200 text-slate-600 hover:bg-slate-50',
+            ? 'border-brand-600 bg-brand-500/10 text-brand-700 dark:text-brand-300'
+            : 'border-line text-fg-muted hover:bg-surface-2',
           disabled && 'cursor-default opacity-70',
         )}
       >
@@ -65,7 +65,7 @@ export function UpvoteButton({
         {state.count}
       </button>
       {error && (
-        <span role="alert" className="text-xs text-red-600">
+        <span role="alert" className="text-xs text-red-600 dark:text-red-400">
           {error}
         </span>
       )}

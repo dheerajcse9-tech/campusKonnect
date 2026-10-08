@@ -89,16 +89,20 @@ export function RegisterPage() {
             ))}
           </Select>
         </div>
-        <label className="flex items-start gap-2 text-sm text-slate-600">
+        <label className="flex items-start gap-2 text-sm text-fg-muted">
           <input
             type="checkbox"
-            className="mt-0.5 size-4 rounded border-slate-300 accent-brand-600"
+            className="mt-0.5 size-4 rounded border-line-strong accent-brand-600"
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
           />
           <span>
             I agree to follow the{' '}
-            <Link to="/guidelines" target="_blank" className="font-medium text-brand-600 underline">
+            <Link
+              to="/guidelines"
+              target="_blank"
+              className="font-medium text-brand-600 dark:text-brand-400 underline"
+            >
               community guidelines
             </Link>
             .
@@ -108,9 +112,12 @@ export function RegisterPage() {
           Create account
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-slate-600">
+      <p className="mt-6 text-center text-sm text-fg-muted">
         Already have an account?{' '}
-        <Link to="/login" className="font-medium text-brand-600 hover:underline">
+        <Link
+          to="/login"
+          className="font-medium text-brand-600 dark:text-brand-400 hover:underline"
+        >
           Sign in
         </Link>
       </p>

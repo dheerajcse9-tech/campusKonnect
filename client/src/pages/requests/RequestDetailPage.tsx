@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   ArrowLeft,
   CalendarDays,
@@ -22,6 +23,13 @@ import { RequestStatusBadge } from '../../features/requests/RequestStatusBadge';
 import { formatDate, formatListingPrice, formatPrice, timeAgo } from '../../lib/format';
 
 type Action = 'approve' | 'reject' | 'cancel' | 'complete';
+
+const TOAST: Record<Action, string> = {
+  approve: 'Approved! Contact details and chat are now unlocked.',
+  reject: 'Request declined.',
+  cancel: 'Cancelled.',
+  complete: 'Marked as done. Nice deal!',
+};
 
 interface ConfirmCopy {
   title: string;
@@ -71,8 +79,8 @@ function confirmCopy(action: Action, request: TransactionRequestDetail): Confirm
 function ContactCard({ request }: { request: TransactionRequestDetail }) {
   if (!request.contact) {
     return (
-      <Card className="flex items-start gap-3 p-4 text-sm text-slate-600">
-        <Lock className="mt-0.5 size-5 shrink-0 text-slate-400" aria-hidden="true" />
+      <Card className="flex items-start gap-3 p-4 text-sm text-fg-muted">
+        <Lock className="mt-0.5 size-5 shrink-0 text-fg-faint" aria-hidden="true" />
         <p>
           Contact details stay private until the seller approves. This keeps everyone safe from spam
           and unwanted contact.
@@ -88,14 +96,14 @@ function ContactCard({ request }: { request: TransactionRequestDetail }) {
     : null;
   return (
     <Card className="p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+      <p className="text-xs font-medium uppercase tracking-wide text-fg-muted">
         Contact {request.contact.name}
       </p>
       <ul className="mt-2 space-y-2 text-sm">
         <li>
           <a
             href={`mailto:${request.contact.email}`}
-            className="flex items-center gap-2 text-brand-700 hover:underline"
+            className="flex items-center gap-2 text-brand-700 dark:text-brand-300 hover:underline"
           >
             <Mail className="size-4" aria-hidden="true" /> {request.contact.email}
           </a>
@@ -104,7 +112,7 @@ function ContactCard({ request }: { request: TransactionRequestDetail }) {
           <li className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <a
               href={`tel:${request.contact.phone}`}
-              className="flex items-center gap-2 text-brand-700 hover:underline"
+              className="flex items-center gap-2 text-brand-700 dark:text-brand-300 hover:underline"
             >
               <Phone className="size-4" aria-hidden="true" /> {request.contact.phone}
             </a>
@@ -113,7 +121,7 @@ function ContactCard({ request }: { request: TransactionRequestDetail }) {
                 href={`https://wa.me/${whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-medium text-emerald-700 hover:underline"
+                className="text-xs font-medium text-emerald-700 dark:text-emerald-300 hover:underline"
               >
                 Open in WhatsApp
               </a>
@@ -138,7 +146,8 @@ export function RequestDetailPage() {
 
   const act = useMutation({
     mutationFn: (action: Action) => requestsApi.act(id, action),
-    onSuccess: (result) => {
+    onSuccess: (result, action) => {
+      toast.success(TOAST[action]);
       queryClient.setQueryData(['request', id], result);
       void queryClient.invalidateQueries({ queryKey: ['requests'] });
       void queryClient.invalidateQueries({ queryKey: ['listing', result.request.listing.id] });
@@ -182,7 +191,7 @@ export function RequestDetailPage() {
     <div className="mx-auto max-w-2xl space-y-4">
       <Link
         to={`/requests?tab=${isSeller ? 'incoming' : 'outgoing'}`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+        className="inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg"
       >
         <ArrowLeft className="size-4" /> All requests
       </Link>
@@ -191,24 +200,24 @@ export function RequestDetailPage() {
         <div className="flex items-start gap-4">
           <Link
             to={`/listings/${listing.id}`}
-            className="size-20 shrink-0 overflow-hidden rounded-lg bg-slate-100"
+            className="size-20 shrink-0 overflow-hidden rounded-lg bg-surface-3"
           >
             {image && <img src={image} alt="" className="size-full object-cover" />}
           </Link>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <RequestStatusBadge status={request.status} />
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-fg-muted">
                 {request.type === 'RENT' ? 'Rental request' : 'Purchase request'}
               </span>
             </div>
             <Link
               to={`/listings/${listing.id}`}
-              className="mt-1 block font-semibold hover:text-brand-700"
+              className="mt-1 block font-semibold hover:text-brand-700 dark:hover:text-brand-300"
             >
               {listing.title}
             </Link>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-fg-muted">
               {formatListingPrice(listing)}
               {listing.type === 'RENT' && listing.deposit
                 ? ` · ${formatPrice(listing.deposit)} deposit`
@@ -218,25 +227,25 @@ export function RequestDetailPage() {
         </div>
 
         {request.type === 'RENT' && request.rentStartDate && request.rentEndDate && (
-          <p className="mt-4 flex items-center gap-2 rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-800">
+          <p className="mt-4 flex items-center gap-2 rounded-lg bg-sky-500/10 px-3 py-2 text-sm text-sky-800 dark:text-sky-300">
             <CalendarDays className="size-4" aria-hidden="true" />
             {formatDate(request.rentStartDate)} – {formatDate(request.rentEndDate)}
           </p>
         )}
 
-        <div className="mt-4 flex items-center gap-3 border-t border-slate-100 pt-4">
+        <div className="mt-4 flex items-center gap-3 border-t border-line pt-4">
           <Avatar name={other.name} url={other.avatarUrl} size="sm" />
           <div className="text-sm">
             <Link to={`/users/${other.id}`} className="font-medium hover:underline">
               {other.name}
             </Link>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-fg-muted">
               {isSeller ? 'Requested' : 'You requested'} {timeAgo(request.createdAt)}
             </p>
           </div>
         </div>
         {request.message && (
-          <blockquote className="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+          <blockquote className="mt-3 rounded-lg bg-surface-2 p-3 text-sm text-fg-2">
             “{request.message}”
           </blockquote>
         )}
@@ -275,7 +284,7 @@ export function RequestDetailPage() {
       )}
 
       {request.status === 'APPROVED' && (
-        <Card className="flex gap-3 border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+        <Card className="flex gap-3 border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-200">
           <ShieldAlert className="size-5 shrink-0" aria-hidden="true" />
           <div>
             <p className="font-medium">Meet safely</p>
@@ -290,7 +299,7 @@ export function RequestDetailPage() {
       <Modal open={pending !== null} onClose={() => setPending(null)} title={copy?.title ?? ''}>
         {copy && pending && (
           <>
-            <p className="text-sm text-slate-600">{copy.body}</p>
+            <p className="text-sm text-fg-muted">{copy.body}</p>
             <div className="mt-3">
               <FormError error={act.error} />
             </div>

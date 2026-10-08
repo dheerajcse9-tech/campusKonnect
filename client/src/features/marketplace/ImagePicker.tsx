@@ -25,9 +25,9 @@ export function ImagePicker({
 
   return (
     <div>
-      <p className="mb-1 text-sm font-medium text-slate-700">
+      <p className="mb-1 text-sm font-medium text-fg-2">
         Photos{' '}
-        <span className="font-normal text-slate-500">
+        <span className="font-normal text-fg-muted">
           ({images.length}/{max})
         </span>
       </p>
@@ -35,7 +35,7 @@ export function ImagePicker({
         {images.map((image, i) => (
           <div
             key={image.key}
-            className="relative aspect-square overflow-hidden rounded-lg bg-slate-100"
+            className="relative aspect-square overflow-hidden rounded-lg bg-surface-3"
           >
             <img src={image.url} alt={`Photo ${i + 1}`} className="size-full object-cover" />
             {i === 0 && (
@@ -59,7 +59,7 @@ export function ImagePicker({
             type="button"
             disabled={busy}
             onClick={() => input.current?.click()}
-            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-slate-300 text-slate-500 hover:border-brand-500 hover:text-brand-600"
+            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-line-strong text-fg-muted hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400"
           >
             <ImagePlus className="size-6" aria-hidden="true" />
             <span className="text-xs">Add photos</span>
@@ -78,7 +78,7 @@ export function ImagePicker({
           if (files.length) onAdd(files);
         }}
       />
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-fg-muted">
         Clear photos of the actual item get more requests. The first photo is the cover.
       </p>
     </div>

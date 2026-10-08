@@ -8,7 +8,7 @@ import type { ListingCategory } from '../../api/types';
 import { Button, ButtonLink } from '../../components/ui/Button';
 import { Input, Select } from '../../components/ui/Field';
 import { Pagination } from '../../components/ui/Pagination';
-import { FullPageSpinner } from '../../components/ui/Spinner';
+import { ListingGridSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState, ErrorState } from '../../components/ui/States';
 import { ListingCard, ListingGrid } from '../../features/marketplace/ListingCard';
 import { CATEGORY_LABEL, CONDITION_LABEL } from '../../lib/format';
@@ -38,7 +38,10 @@ export function HomePage() {
 
   /** Updates filters in the URL (shareable, back-button friendly) and resets to page 1. */
   function update(changes: Record<string, string | undefined>) {
-    const next = new URLSearchParams(params);
+    // Build from the browser's URL, not this render's copy: the router applies
+    // navigations in a transition, so a quick second update (e.g. pick a category,
+    // then search) would otherwise be computed from stale filters.
+    const next = new URLSearchParams(window.location.search);
     for (const [key, value] of Object.entries(changes)) {
       if (value) next.set(key, value);
       else next.delete(key);
@@ -58,33 +61,42 @@ export function HomePage() {
 
   return (
     <div>
-      <section className="mb-6 rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-800 px-5 py-6 text-white sm:px-8 sm:py-8">
-        <h1 className="text-2xl font-bold sm:text-3xl">Your campus marketplace</h1>
-        <p className="mt-1 text-sm text-indigo-100 sm:text-base">
-          Buy, sell and rent with verified students. No strangers, no spam.
-        </p>
-        <form onSubmit={onSearch} className="mt-4 flex gap-2" role="search">
-          <label htmlFor="search" className="sr-only">
-            Search listings
-          </label>
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-            <input
-              id="search"
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search books, cycles, calculators…"
-              className="h-11 w-full rounded-lg border-0 bg-white pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-            />
-          </div>
-          <button
-            type="submit"
-            className="h-11 rounded-lg bg-white/15 px-4 text-sm font-semibold hover:bg-white/25"
-          >
-            Search
-          </button>
-        </form>
+      <section className="relative mb-6 overflow-hidden rounded-3xl bg-brand-gradient px-5 py-7 text-white shadow-xl shadow-brand-600/20 sm:px-10 sm:py-10">
+        <div className="grid-pattern absolute inset-0 opacity-40" aria-hidden="true" />
+        <div
+          className="absolute -right-16 -top-16 size-64 rounded-full bg-white/15 blur-3xl"
+          aria-hidden="true"
+        />
+        <div className="relative">
+          <h1 className="font-display text-2xl font-extrabold tracking-tight sm:text-4xl">
+            Your campus marketplace
+          </h1>
+          <p className="mt-2 text-sm text-white/80 sm:text-base">
+            Buy, sell and rent with verified students. No strangers, no spam.
+          </p>
+          <form onSubmit={onSearch} className="mt-4 flex gap-2" role="search">
+            <label htmlFor="search" className="sr-only">
+              Search listings
+            </label>
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-fg-faint" />
+              <input
+                id="search"
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search books, cycles, calculators…"
+                className="h-12 w-full rounded-xl border-0 bg-surface pl-10 pr-3 text-sm text-fg shadow-lg placeholder:text-fg-faint focus:outline-none focus:ring-4 focus:ring-white/40"
+              />
+            </div>
+            <button
+              type="submit"
+              className="h-12 rounded-xl border border-white/30 bg-white/15 px-5 text-sm font-semibold backdrop-blur transition hover:bg-white/25 active:scale-95"
+            >
+              Search
+            </button>
+          </form>
+        </div>
       </section>
 
       <div
@@ -101,10 +113,10 @@ export function HomePage() {
               onClick={() => update({ category })}
               aria-pressed={active}
               className={clsx(
-                'shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium',
+                'shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-semibold transition',
                 active
-                  ? 'border-brand-600 bg-brand-600 text-white'
-                  : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
+                  ? 'border-transparent bg-brand-gradient text-white shadow-md shadow-brand-600/25'
+                  : 'border-line-strong bg-surface text-fg-2 hover:bg-surface-2',
               )}
             >
               {category ? CATEGORY_LABEL[category] : 'All'}
@@ -124,7 +136,7 @@ export function HomePage() {
           {activeFilters ? ` (${activeFilters})` : ''}
         </Button>
         {query.q && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-sm text-brand-700">
+          <span className="inline-flex items-center gap-1 rounded-full bg-brand-500/10 px-3 py-1 text-sm text-brand-700 dark:text-brand-300">
             “{query.q}”
             <button
               type="button"
@@ -148,7 +160,7 @@ export function HomePage() {
             onChange={(e) =>
               update({ sort: e.target.value === 'newest' ? undefined : e.target.value })
             }
-            className="h-8 rounded-lg border border-slate-300 bg-white px-2 text-sm"
+            className="h-9 rounded-xl border border-line-strong bg-surface px-3 text-sm font-medium text-fg"
           >
             <option value="newest">Newest first</option>
             <option value="price_asc">Price: low to high</option>
@@ -158,7 +170,7 @@ export function HomePage() {
       </div>
 
       {showFilters && (
-        <div className="mb-5 grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-4">
+        <div className="animate-rise mb-5 grid grid-cols-2 gap-3 rounded-2xl border border-line bg-surface p-4 shadow-sm sm:grid-cols-4">
           <Select
             label="Type"
             value={query.type ?? ''}
@@ -220,7 +232,7 @@ export function HomePage() {
       )}
 
       {listings.isPending ? (
-        <FullPageSpinner />
+        <ListingGridSkeleton />
       ) : listings.isError ? (
         <ErrorState error={listings.error} onRetry={() => void listings.refetch()} />
       ) : listings.data.items.length === 0 ? (
@@ -236,12 +248,12 @@ export function HomePage() {
         />
       ) : (
         <>
-          <p className="mb-3 text-sm text-slate-500">
+          <p className="mb-3 text-sm text-fg-muted">
             {listings.data.total} {listings.data.total === 1 ? 'listing' : 'listings'}
           </p>
           <ListingGrid>
-            {listings.data.items.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+            {listings.data.items.map((listing, i) => (
+              <ListingCard key={listing.id} listing={listing} index={i} />
             ))}
           </ListingGrid>
           <Pagination

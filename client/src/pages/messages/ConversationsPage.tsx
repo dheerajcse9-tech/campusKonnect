@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
+import { ListSkeleton } from '../../components/ui/Skeleton';
 import { MessageCircle } from 'lucide-react';
 import { Link } from 'react-router';
 import { messagingApi } from '../../api/endpoints';
 import { useCurrentUser } from '../../auth/AuthContext';
 import { Avatar } from '../../components/ui/Avatar';
 import { PageHeader } from '../../components/ui/PageHeader';
-import { FullPageSpinner } from '../../components/ui/Spinner';
 import { EmptyState, ErrorState } from '../../components/ui/States';
 import { timeAgo } from '../../lib/format';
 
@@ -21,7 +21,7 @@ export function ConversationsPage() {
     <div className="mx-auto max-w-2xl">
       <PageHeader title="Messages" description="Chats open once a seller approves a request." />
       {isPending ? (
-        <FullPageSpinner />
+        <ListSkeleton />
       ) : error ? (
         <ErrorState error={error} onRetry={() => void refetch()} />
       ) : data.items.length === 0 ? (
@@ -31,12 +31,12 @@ export function ConversationsPage() {
           description="When a seller approves your request (or you approve someone's), you can chat here to arrange the meetup."
         />
       ) : (
-        <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
           {data.items.map((conversation) => (
             <li key={conversation.id}>
               <Link
                 to={`/messages/${conversation.id}`}
-                className="flex items-center gap-3 p-4 hover:bg-slate-50"
+                className="flex items-center gap-3 p-4 hover:bg-surface-2"
               >
                 <Avatar
                   name={conversation.counterpart.name}
@@ -46,14 +46,14 @@ export function ConversationsPage() {
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="truncate font-medium">{conversation.counterpart.name}</p>
                     {conversation.lastMessage && (
-                      <span className="shrink-0 text-xs text-slate-400">
+                      <span className="shrink-0 text-xs text-fg-faint">
                         {timeAgo(conversation.lastMessage.createdAt)}
                       </span>
                     )}
                   </div>
-                  <p className="truncate text-xs text-slate-500">{conversation.listing.title}</p>
+                  <p className="truncate text-xs text-fg-muted">{conversation.listing.title}</p>
                   <p
-                    className={`truncate text-sm ${conversation.unreadCount ? 'font-semibold text-slate-900' : 'text-slate-600'}`}
+                    className={`truncate text-sm ${conversation.unreadCount ? 'font-semibold text-fg' : 'text-fg-muted'}`}
                   >
                     {conversation.lastMessage
                       ? `${conversation.lastMessage.senderId === me.id ? 'You: ' : ''}${conversation.lastMessage.body}`

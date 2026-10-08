@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from 'react';
+import { toast } from 'sonner';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { ApiError } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
@@ -22,7 +23,8 @@ export function LoginPage() {
     setSubmitting(true);
     setError(null);
     try {
-      await login(email, password);
+      const user = await login(email, password);
+      toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
       navigate(from, { replace: true });
     } catch (err) {
       setError(err);
@@ -39,7 +41,7 @@ export function LoginPage() {
         {notVerified ? (
           <div
             role="alert"
-            className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
+            className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-300"
           >
             Please verify your email first.{' '}
             <Link to="/check-email" state={{ email }} className="font-medium underline">
@@ -68,7 +70,7 @@ export function LoginPage() {
         <div className="flex justify-end">
           <Link
             to="/forgot-password"
-            className="text-sm font-medium text-brand-600 hover:underline"
+            className="text-sm font-medium text-brand-600 dark:text-brand-400 hover:underline"
           >
             Forgot password?
           </Link>
@@ -77,9 +79,12 @@ export function LoginPage() {
           Sign in
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-slate-600">
+      <p className="mt-6 text-center text-sm text-fg-muted">
         New here?{' '}
-        <Link to="/register" className="font-medium text-brand-600 hover:underline">
+        <Link
+          to="/register"
+          className="font-medium text-brand-600 dark:text-brand-400 hover:underline"
+        >
           Create an account
         </Link>
       </p>

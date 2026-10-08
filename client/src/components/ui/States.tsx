@@ -16,10 +16,18 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-      <Icon className="size-10 text-slate-400" aria-hidden="true" />
-      <h3 className="mt-3 font-semibold text-slate-800">{title}</h3>
-      {description && <p className="mt-1 max-w-sm text-sm text-slate-500">{description}</p>}
+    <div className="animate-rise flex flex-col items-center rounded-3xl border border-dashed border-line-strong bg-surface/60 px-6 py-14 text-center">
+      <div className="relative">
+        <div
+          className="absolute inset-0 rounded-full bg-brand-gradient opacity-30 blur-xl"
+          aria-hidden="true"
+        />
+        <div className="relative flex size-16 items-center justify-center rounded-2xl bg-brand-gradient text-white shadow-lg shadow-brand-600/30">
+          <Icon className="size-8" aria-hidden="true" />
+        </div>
+      </div>
+      <h3 className="mt-5 text-lg font-bold text-fg">{title}</h3>
+      {description && <p className="mt-1 max-w-sm text-sm text-fg-muted">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
@@ -29,10 +37,10 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
   return (
     <div
       role="alert"
-      className="flex flex-col items-center rounded-xl border border-red-200 bg-red-50 px-6 py-10 text-center"
+      className="flex flex-col items-center rounded-2xl border border-red-500/30 bg-red-500/10 px-6 py-10 text-center"
     >
       <AlertTriangle className="size-8 text-red-500" aria-hidden="true" />
-      <p className="mt-2 text-sm text-red-700">{errorMessage(error)}</p>
+      <p className="mt-2 text-sm text-red-700 dark:text-red-300">{errorMessage(error)}</p>
       {onRetry && (
         <Button variant="secondary" size="sm" className="mt-4" onClick={onRetry}>
           Try again
@@ -47,7 +55,7 @@ export function FormError({ error }: { error: unknown }) {
   return (
     <div
       role="alert"
-      className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+      className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300"
     >
       {errorMessage(error)}
     </div>

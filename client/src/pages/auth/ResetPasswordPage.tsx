@@ -35,7 +35,7 @@ export function ResetPasswordPage() {
   if (!token) {
     return (
       <AuthLayout title="Invalid link">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-fg-muted">
           This reset link is incomplete. Please request a new one.
         </p>
         <ButtonLink to="/forgot-password" className="mt-4 w-full">
@@ -49,7 +49,10 @@ export function ResetPasswordPage() {
     <AuthLayout title="Choose a new password">
       {done ? (
         <>
-          <p role="status" className="rounded-lg bg-emerald-50 px-3 py-3 text-sm text-emerald-700">
+          <p
+            role="status"
+            className="rounded-lg bg-emerald-500/10 px-3 py-3 text-sm text-emerald-700 dark:text-emerald-300"
+          >
             Your password was updated, and you were signed out on all devices.
           </p>
           <ButtonLink to="/login" className="mt-4 w-full">
@@ -82,7 +85,10 @@ export function ResetPasswordPage() {
             Update password
           </Button>
           <p className="text-center text-sm">
-            <Link to="/forgot-password" className="text-brand-600 hover:underline">
+            <Link
+              to="/forgot-password"
+              className="text-brand-600 dark:text-brand-400 hover:underline"
+            >
               Need a new link?
             </Link>
           </p>

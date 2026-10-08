@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
+import { ListSkeleton } from '../../components/ui/Skeleton';
 import clsx from 'clsx';
-import { ClipboardList, ImageOff } from 'lucide-react';
+import { ClipboardList } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router';
 import { requestsApi } from '../../api/endpoints';
 import type { RequestStatus } from '../../api/types';
 import { ButtonLink } from '../../components/ui/Button';
 import { PageHeader } from '../../components/ui/PageHeader';
-import { FullPageSpinner } from '../../components/ui/Spinner';
 import { EmptyState, ErrorState } from '../../components/ui/States';
+import { CategoryArt } from '../../features/marketplace/CategoryArt';
 import { RequestStatusBadge } from '../../features/requests/RequestStatusBadge';
 import { formatDate, formatListingPrice, timeAgo } from '../../lib/format';
 
@@ -41,7 +42,7 @@ export function RequestsPage() {
       />
       <div
         role="tablist"
-        className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 sm:inline-grid"
+        className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-surface-3 p-1 sm:inline-grid"
       >
         {(['outgoing', 'incoming'] as const).map((value) => (
           <button
@@ -51,7 +52,9 @@ export function RequestsPage() {
             onClick={() => setTab(value)}
             className={clsx(
               'rounded-lg px-4 py-2 text-sm font-semibold',
-              tab === value ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-600',
+              tab === value
+                ? 'bg-surface text-brand-700 dark:text-brand-300 shadow-sm'
+                : 'text-fg-muted',
             )}
           >
             {value === 'outgoing' ? 'My requests' : 'Requests for my items'}
@@ -67,8 +70,8 @@ export function RequestsPage() {
             className={clsx(
               'rounded-full border px-3 py-1 text-sm',
               status === filter.value
-                ? 'border-brand-600 bg-brand-50 text-brand-700'
-                : 'border-slate-300 bg-white text-slate-600',
+                ? 'border-brand-600 bg-brand-500/10 text-brand-700 dark:text-brand-300'
+                : 'border-line-strong bg-surface text-fg-muted',
             )}
           >
             {filter.label}
@@ -77,7 +80,7 @@ export function RequestsPage() {
       </div>
 
       {isPending ? (
-        <FullPageSpinner />
+        <ListSkeleton />
       ) : error ? (
         <ErrorState error={error} onRetry={() => void refetch()} />
       ) : data.items.length === 0 ? (
@@ -102,13 +105,13 @@ export function RequestsPage() {
               <li key={request.id}>
                 <Link
                   to={`/requests/${request.id}`}
-                  className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 hover:border-brand-300"
+                  className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3 hover:border-brand-300"
                 >
-                  <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                  <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-surface-3">
                     {image ? (
                       <img src={image} alt="" className="size-full object-cover" />
                     ) : (
-                      <ImageOff className="m-4 size-6 text-slate-400" aria-hidden="true" />
+                      <CategoryArt category={request.listing.category} className="[&_svg]:size-6" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -116,11 +119,11 @@ export function RequestsPage() {
                       <p className="truncate font-medium">{request.listing.title}</p>
                       <RequestStatusBadge status={request.status} />
                     </div>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-fg-muted">
                       {tab === 'incoming' ? `From ${other.name}` : `Seller: ${other.name}`} ·{' '}
                       {formatListingPrice(request.listing)}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-fg-faint">
                       {request.type === 'RENT' && request.rentStartDate && request.rentEndDate
                         ? `${formatDate(request.rentStartDate)} – ${formatDate(request.rentEndDate)} · `
                         : ''}

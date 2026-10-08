@@ -21,7 +21,10 @@ export function Spinner({ className }: { className?: string }) {
 
 export function FullPageSpinner() {
   return (
-    <div className="flex min-h-[50vh] items-center justify-center text-brand-600" role="status">
+    <div
+      className="flex min-h-[50vh] items-center justify-center text-brand-600 dark:text-brand-400"
+      role="status"
+    >
       <Spinner className="size-8" />
       <span className="sr-only">Loading</span>
     </div>

@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Camera, ExternalLink } from 'lucide-react';
 import { type FormEvent, useRef, useState } from 'react';
 import { Link } from 'react-router';
@@ -37,6 +38,7 @@ function ProfileForm() {
     onSuccess: ({ user }) => {
       setUser(user);
       setSaved(true);
+      toast.success('Profile saved');
     },
   });
   const errors = fieldErrors(save.error);
@@ -104,7 +106,7 @@ function ProfileForm() {
       />
       <div className="flex items-center justify-end gap-3">
         {saved && (
-          <span role="status" className="text-sm text-emerald-700">
+          <span role="status" className="text-sm text-emerald-700 dark:text-emerald-300">
             Saved
           </span>
         )}
@@ -132,6 +134,7 @@ function AvatarUploader() {
       if (problem) throw new Error(problem);
       const { user } = await usersApi.uploadAvatar(prepared);
       setUser(user);
+      toast.success('Profile photo updated');
     } catch (err) {
       setError(err instanceof Error && !('code' in err) ? err.message : errorMessage(err));
     } finally {
@@ -155,15 +158,15 @@ function AvatarUploader() {
       </div>
       <div>
         <p className="font-semibold">{me.name}</p>
-        <p className="text-sm text-slate-500">{me.email}</p>
+        <p className="text-sm text-fg-muted">{me.email}</p>
         <Link
           to={`/users/${me.id}`}
-          className="mt-1 inline-flex items-center gap-1 text-sm text-brand-700 hover:underline"
+          className="mt-1 inline-flex items-center gap-1 text-sm text-brand-700 dark:text-brand-300 hover:underline"
         >
           View public profile <ExternalLink className="size-3.5" />
         </Link>
-        {busy && <p className="text-xs text-slate-500">Uploading…</p>}
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {busy && <p className="text-xs text-fg-muted">Uploading…</p>}
+        {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
       </div>
       <input
         ref={input}
@@ -205,7 +208,10 @@ function ChangePassword() {
     >
       <FormError error={errors.newPassword ? null : change.error} />
       {message && (
-        <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <p
+          role="status"
+          className="rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300"
+        >
           {message}
         </p>
       )}
@@ -247,12 +253,15 @@ function DeleteAccount() {
   const [confirm, setConfirm] = useState('');
   const remove = useMutation({
     mutationFn: () => usersApi.deleteAccount(password),
-    onSuccess: clearSession,
+    onSuccess: () => {
+      toast.success('Your account has been deleted. Take care!');
+      clearSession();
+    },
   });
 
   return (
     <>
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-fg-muted">
         Permanently close your account. Your listings are removed, open deals are cancelled, your
         posts and answers are hidden, and your personal details are erased. This can't be undone.
       </p>
@@ -265,7 +274,7 @@ function DeleteAccount() {
         Delete my account
       </Button>
       {me.role === 'ADMIN' && (
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-fg-muted">
           Administrators must hand over the admin role first.
         </p>
       )}
@@ -321,8 +330,8 @@ export function ProfilePage() {
         <h2 className="mb-3 font-semibold">Password</h2>
         <ChangePassword />
       </Card>
-      <Card className="border-red-200 p-5">
-        <h2 className="mb-2 font-semibold text-red-700">Delete account</h2>
+      <Card className="border-red-500/30 p-5">
+        <h2 className="mb-2 font-semibold text-red-700 dark:text-red-300">Delete account</h2>
         <DeleteAccount />
       </Card>
     </div>

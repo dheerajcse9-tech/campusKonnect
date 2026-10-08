@@ -3,13 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#4f46e5" />
+    <meta name="theme-color" content="#5f3bf0" />
     <meta
       name="description"
       content="CampusKonnect: a private, verified marketplace and community for your campus."
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>CampusKonnect</title>
+    <title>CampusKonnect · Your verified campus marketplace</title>
+    <meta property="og:title" content="CampusKonnect" />
+    <meta property="og:description" content="Buy, sell, rent and ask seniors. Only verified students from your college." />
+    <script>
+      // Apply the saved theme before first paint to avoid a light/dark flash.
+      (function () {
+        try {
+          var t = localStorage.getItem('ck-theme');
+          var dark = t === 'dark' || ((!t || t === 'system') && matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

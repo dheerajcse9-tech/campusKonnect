@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+import { ListingGridSkeleton } from '../../components/ui/Skeleton';
 import { Package, Plus } from 'lucide-react';
 import { listingsApi } from '../../api/endpoints';
 import { ButtonLink } from '../../components/ui/Button';
 import { PageHeader } from '../../components/ui/PageHeader';
-import { FullPageSpinner } from '../../components/ui/Spinner';
 import { EmptyState, ErrorState } from '../../components/ui/States';
 import { ListingCard, ListingGrid } from '../../features/marketplace/ListingCard';
 
@@ -25,7 +25,7 @@ export function MyListingsPage() {
         }
       />
       {isPending ? (
-        <FullPageSpinner />
+        <ListingGridSkeleton count={4} />
       ) : error ? (
         <ErrorState error={error} onRetry={() => void refetch()} />
       ) : data.items.length === 0 ? (

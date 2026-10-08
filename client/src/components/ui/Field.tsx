@@ -8,10 +8,10 @@ import {
 } from 'react';
 
 const control =
-  'block w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200 disabled:bg-slate-100';
+  'block w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm text-fg shadow-sm transition placeholder:text-fg-faint focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/15 disabled:cursor-not-allowed disabled:bg-surface-3 disabled:text-fg-muted';
 
 function controlClass(error?: string, className?: string) {
-  return clsx(control, error ? 'border-red-400' : 'border-slate-300', className);
+  return clsx(control, error ? 'border-red-400' : 'border-line-strong', className);
 }
 
 interface FieldShellProps {
@@ -24,19 +24,19 @@ interface FieldShellProps {
 
 function FieldShell({ id, label, hint, error, children }: FieldShellProps) {
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-slate-700">
+        <label htmlFor={id} className="block text-sm font-semibold text-fg-2">
           {label}
         </label>
       )}
       {children}
       {error ? (
-        <p id={`${id}-error`} className="text-xs text-red-600">
+        <p id={`${id}-error`} className="text-xs text-red-600 dark:text-red-400">
           {error}
         </p>
       ) : (
-        hint && <p className="text-xs text-slate-500">{hint}</p>
+        hint && <p className="text-xs text-fg-muted">{hint}</p>
       )}
     </div>
   );

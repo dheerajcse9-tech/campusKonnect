@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { type FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { requestsApi } from '../../api/endpoints';
@@ -35,6 +36,7 @@ export function RequestItemModal({
         rentEndDate: isRent ? end : undefined,
       }),
     onSuccess: ({ request }) => {
+      toast.success('Request sent! The seller has been notified.');
       void queryClient.invalidateQueries({ queryKey: ['listing', listing.id] });
       void queryClient.invalidateQueries({ queryKey: ['requests'] });
       navigate(`/requests/${request.id}`);
@@ -50,9 +52,9 @@ export function RequestItemModal({
   return (
     <Modal open={open} onClose={onClose} title={isRent ? 'Request to rent' : 'Request to buy'}>
       <form onSubmit={onSubmit} className="space-y-4">
-        <div className="rounded-lg bg-slate-50 p-3 text-sm">
+        <div className="rounded-lg bg-surface-2 p-3 text-sm">
           <p className="font-medium">{listing.title}</p>
-          <p className="text-slate-600">
+          <p className="text-fg-muted">
             {formatListingPrice(listing)}
             {isRent && listing.deposit
               ? ` · ${formatPrice(listing.deposit)} refundable deposit`
@@ -95,7 +97,7 @@ export function RequestItemModal({
           }
           error={errors.message}
         />
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-fg-muted">
           Your contact details are shared only if the seller approves. You can then chat and arrange
           to meet on campus.
         </p>

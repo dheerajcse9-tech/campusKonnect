@@ -31,7 +31,10 @@ export function ForgotPasswordPage() {
       subtitle="We'll email you a link to choose a new password."
     >
       {message ? (
-        <p role="status" className="rounded-lg bg-emerald-50 px-3 py-3 text-sm text-emerald-700">
+        <p
+          role="status"
+          className="rounded-lg bg-emerald-500/10 px-3 py-3 text-sm text-emerald-700 dark:text-emerald-300"
+        >
           {message} The link expires in 1 hour.
         </p>
       ) : (
@@ -51,7 +54,10 @@ export function ForgotPasswordPage() {
         </form>
       )}
       <p className="mt-6 text-center text-sm">
-        <Link to="/login" className="font-medium text-brand-600 hover:underline">
+        <Link
+          to="/login"
+          className="font-medium text-brand-600 dark:text-brand-400 hover:underline"
+        >
           Back to sign in
         </Link>
       </p>

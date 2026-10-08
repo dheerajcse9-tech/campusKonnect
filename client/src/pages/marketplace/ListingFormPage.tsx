@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import clsx from 'clsx';
 import { type FormEvent, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
@@ -96,6 +97,7 @@ function ListingForm({ listing }: { listing?: ListingDetail }) {
       return listingsApi.create(data);
     },
     onSuccess: ({ listing: saved }) => {
+      toast.success(editing ? 'Changes saved' : 'Your listing is live!');
       void queryClient.invalidateQueries({ queryKey: ['listings'] });
       void queryClient.invalidateQueries({ queryKey: ['my-listings'] });
       queryClient.setQueryData(['listing', saved.id], {
@@ -164,7 +166,7 @@ function ListingForm({ listing }: { listing?: ListingDetail }) {
         <div
           role="radiogroup"
           aria-label="Listing type"
-          className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1"
+          className="grid grid-cols-2 gap-2 rounded-xl bg-surface-3 p-1"
         >
           {(['SELL', 'RENT'] as const).map((type) => (
             <button
@@ -175,7 +177,9 @@ function ListingForm({ listing }: { listing?: ListingDetail }) {
               onClick={() => set('type', type)}
               className={clsx(
                 'rounded-lg py-2 text-sm font-semibold',
-                form.type === type ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-600',
+                form.type === type
+                  ? 'bg-surface text-brand-700 dark:text-brand-300 shadow-sm'
+                  : 'text-fg-muted',
               )}
             >
               {type === 'SELL' ? 'Sell' : 'Rent out'}
@@ -192,7 +196,7 @@ function ListingForm({ listing }: { listing?: ListingDetail }) {
           onRemove={removeImage}
           busy={imagesBusy || save.isPending}
         />
-        {imageError && <p className="text-sm text-red-600">{imageError}</p>}
+        {imageError && <p className="text-sm text-red-600 dark:text-red-400">{imageError}</p>}
       </Card>
 
       <Card className="space-y-4 p-5">

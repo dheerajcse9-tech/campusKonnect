@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ListSkeleton } from '../../components/ui/Skeleton';
 import clsx from 'clsx';
 import { Bell } from 'lucide-react';
 import { useState } from 'react';
@@ -8,7 +9,6 @@ import type { Notification } from '../../api/types';
 import { Button } from '../../components/ui/Button';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Pagination } from '../../components/ui/Pagination';
-import { FullPageSpinner } from '../../components/ui/Spinner';
 import { EmptyState, ErrorState } from '../../components/ui/States';
 import { timeAgo } from '../../lib/format';
 
@@ -50,7 +50,7 @@ export function NotificationsPage() {
         }
       />
       {isPending ? (
-        <FullPageSpinner />
+        <ListSkeleton />
       ) : error ? (
         <ErrorState error={error} onRetry={() => void refetch()} />
       ) : data.items.length === 0 ? (
@@ -61,15 +61,15 @@ export function NotificationsPage() {
         />
       ) : (
         <>
-          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
             {data.items.map((notification) => (
               <li key={notification.id}>
                 <button
                   type="button"
                   onClick={() => void open(notification)}
                   className={clsx(
-                    'flex w-full gap-3 p-4 text-left hover:bg-slate-50',
-                    !notification.readAt && 'bg-brand-50/50',
+                    'flex w-full gap-3 p-4 text-left hover:bg-surface-2',
+                    !notification.readAt && 'bg-brand-500/5',
                   )}
                 >
                   <span
@@ -86,11 +86,11 @@ export function NotificationsPage() {
                       {notification.title}
                     </span>
                     {notification.body && (
-                      <span className="block truncate text-sm text-slate-600">
+                      <span className="block truncate text-sm text-fg-muted">
                         {notification.body}
                       </span>
                     )}
-                    <span className="block text-xs text-slate-400">
+                    <span className="block text-xs text-fg-faint">
                       {timeAgo(notification.createdAt)}
                     </span>
                   </span>

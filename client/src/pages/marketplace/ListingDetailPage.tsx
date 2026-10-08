@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import clsx from 'clsx';
-import { ArrowLeft, ImageOff, MapPin, Pencil, ShieldCheck, Tag, Trash2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Pencil, ShieldCheck, Tag, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { listingsApi } from '../../api/endpoints';
@@ -13,6 +14,7 @@ import { Modal } from '../../components/ui/Modal';
 import { FullPageSpinner } from '../../components/ui/Spinner';
 import { ErrorState, FormError } from '../../components/ui/States';
 import { RequestItemModal } from '../../features/marketplace/RequestItemModal';
+import { CategoryArt } from '../../features/marketplace/CategoryArt';
 import { ReportButton } from '../../features/reports/ReportButton';
 import {
   CATEGORY_LABEL,
@@ -29,14 +31,14 @@ function Gallery({ listing }: { listing: ListingDetail }) {
   const images = listing.images;
   if (images.length === 0) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center rounded-xl bg-slate-100 text-slate-400">
-        <ImageOff className="size-10" aria-hidden="true" />
+      <div className="aspect-[4/3] overflow-hidden rounded-3xl">
+        <CategoryArt category={listing.category} />
       </div>
     );
   }
   return (
     <div>
-      <div className="aspect-[4/3] overflow-hidden rounded-xl bg-slate-100">
+      <div className="aspect-[4/3] overflow-hidden rounded-xl bg-surface-3">
         <img src={images[index]?.url} alt={listing.title} className="size-full object-contain" />
       </div>
       {images.length > 1 && (
@@ -73,11 +75,15 @@ function OwnerActions({ listing }: { listing: ListingDetail }) {
   };
   const status = useMutation({
     mutationFn: (next: 'ACTIVE' | 'SOLD') => listingsApi.setStatus(listing.id, next),
-    onSuccess: refresh,
+    onSuccess: (_data, next) => {
+      toast.success(next === 'SOLD' ? 'Marked as sold' : 'Listed again');
+      refresh();
+    },
   });
   const remove = useMutation({
     mutationFn: () => listingsApi.remove(listing.id),
     onSuccess: () => {
+      toast.success('Listing deleted');
       refresh();
       navigate('/my-listings', { replace: true });
     },
@@ -87,7 +93,7 @@ function OwnerActions({ listing }: { listing: ListingDetail }) {
     <div className="space-y-3">
       <FormError error={status.error} />
       {listing.status === 'RESERVED' && (
-        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+        <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-300">
           You approved a request for this item. Complete or cancel it from{' '}
           <Link to="/requests?tab=incoming" className="font-medium underline">
             your requests
@@ -121,7 +127,11 @@ function OwnerActions({ listing }: { listing: ListingDetail }) {
           </Button>
         )}
         {listing.status !== 'RESERVED' && (
-          <Button variant="ghost" className="text-red-600" onClick={() => setConfirmDelete(true)}>
+          <Button
+            variant="ghost"
+            className="text-red-600 dark:text-red-400"
+            onClick={() => setConfirmDelete(true)}
+          >
             <Trash2 className="size-4" /> Delete
           </Button>
         )}
@@ -131,7 +141,7 @@ function OwnerActions({ listing }: { listing: ListingDetail }) {
         onClose={() => setConfirmDelete(false)}
         title="Delete this listing?"
       >
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-fg-muted">
           It will be removed from the marketplace, and anyone with a pending request will be
           notified.
         </p>
@@ -154,7 +164,7 @@ function BuyerActions({ listing }: { listing: ListingDetail }) {
   if (listing.viewerRequest) {
     return (
       <div className="space-y-2">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-fg-muted">
           Your request is{' '}
           <strong>{REQUEST_STATUS_LABEL[listing.viewerRequest.status].toLowerCase()}</strong>.
         </p>
@@ -166,7 +176,7 @@ function BuyerActions({ listing }: { listing: ListingDetail }) {
   }
   if (listing.status !== 'ACTIVE') {
     return (
-      <p className="rounded-lg bg-slate-100 p-3 text-center text-sm text-slate-600">
+      <p className="rounded-lg bg-surface-3 p-3 text-center text-sm text-fg-muted">
         This item is {LISTING_STATUS_LABEL[listing.status].toLowerCase()} and not accepting
         requests.
       </p>
@@ -177,7 +187,7 @@ function BuyerActions({ listing }: { listing: ListingDetail }) {
       <Button className="w-full" onClick={() => setOpen(true)}>
         {listing.type === 'RENT' ? 'Request to rent' : 'Request to buy'}
       </Button>
-      <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
+      <p className="mt-2 flex items-center gap-1.5 text-xs text-fg-muted">
         <ShieldCheck className="size-4 text-emerald-600" aria-hidden="true" />
         No contact details are shared until the seller approves.
       </p>
@@ -203,7 +213,7 @@ export function ListingDetailPage() {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg"
       >
         <ArrowLeft className="size-4" /> Back
       </button>
@@ -212,7 +222,7 @@ export function ListingDetailPage() {
           <Gallery listing={listing} />
           <Card className="mt-4 p-5">
             <h2 className="font-semibold">Description</h2>
-            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700">
+            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-fg-2">
               {listing.description}
             </p>
           </Card>
@@ -233,15 +243,17 @@ export function ListingDetailPage() {
               )}
             </div>
             <h1 className="mt-2 text-xl font-bold">{listing.title}</h1>
-            <p className="mt-1 text-2xl font-bold text-brand-700">{formatListingPrice(listing)}</p>
+            <p className="mt-1 text-2xl font-bold text-brand-700 dark:text-brand-300">
+              {formatListingPrice(listing)}
+            </p>
             {listing.type === 'RENT' && (
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-fg-muted">
                 {listing.deposit
                   ? `${formatPrice(listing.deposit)} refundable deposit`
                   : 'No deposit'}
               </p>
             )}
-            <dl className="mt-4 space-y-2 text-sm text-slate-600">
+            <dl className="mt-4 space-y-2 text-sm text-fg-muted">
               <div className="flex items-center gap-2">
                 <Tag className="size-4" aria-hidden="true" />
                 <dt className="sr-only">Category and condition</dt>
@@ -257,7 +269,7 @@ export function ListingDetailPage() {
                 </div>
               )}
             </dl>
-            <p className="mt-3 text-xs text-slate-400">Listed {timeAgo(listing.createdAt)}</p>
+            <p className="mt-3 text-xs text-fg-faint">Listed {timeAgo(listing.createdAt)}</p>
             <div className="mt-5">
               {listing.isOwner ? (
                 <OwnerActions listing={listing} />
@@ -268,7 +280,7 @@ export function ListingDetailPage() {
           </Card>
 
           <Card className="p-5">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Seller</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-fg-muted">Seller</p>
             <Link
               to={`/users/${listing.seller.id}`}
               className="mt-2 flex items-center gap-3 hover:opacity-80"
@@ -276,7 +288,7 @@ export function ListingDetailPage() {
               <Avatar name={listing.seller.name} url={listing.seller.avatarUrl} />
               <div>
                 <p className="font-medium">{listing.seller.name}</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-fg-muted">
                   {[
                     listing.seller.department,
                     listing.seller.year ? `Year ${listing.seller.year}` : null,

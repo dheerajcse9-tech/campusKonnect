@@ -1,13 +1,113 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/plus-jakarta-sans';
+
+/* Class-based dark mode, toggled on <html> by the ThemeProvider. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
+  --font-sans:
+    'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display:
+    'Plus Jakarta Sans Variable', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f0f0ff;
+  --color-brand-100: #e3e2ff;
+  --color-brand-200: #cbc8ff;
+  --color-brand-300: #a9a3ff;
+  --color-brand-400: #8b7dff;
+  --color-brand-500: #7058fb;
+  --color-brand-600: #5f3bf0;
+  --color-brand-700: #512bd6;
+  --color-brand-800: #4225ad;
+  --color-brand-900: #372388;
+  --color-accent-400: #f472b6;
+  --color-accent-500: #ec4899;
+
+  --animate-page-in: page-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-rise: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: -400px 0;
+    }
+    to {
+      background-position: 400px 0;
+    }
+  }
+}
+
+/* Semantic surface/text tokens that flip in dark mode. */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-faint: var(--fg-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+}
+
+:root {
+  color-scheme: light;
+  --canvas: #f5f6fb;
+  --surface: #ffffff;
+  --surface-2: #f8f9fc;
+  --surface-3: #eef0f6;
+  --fg: #0d1124;
+  --fg-2: #2f3650;
+  --fg-muted: #5e6682;
+  --fg-faint: #9299b0;
+  --line: #e6e8f0;
+  --line-strong: #cfd3e1;
+}
+
+.dark {
+  color-scheme: dark;
+  --canvas: #070915;
+  --surface: #10142a;
+  --surface-2: #151a33;
+  --surface-3: #1c2240;
+  --fg: #eef0fb;
+  --fg-2: #c9cde3;
+  --fg-muted: #949bb8;
+  --fg-faint: #646b8a;
+  --line: #232946;
+  --line-strong: #343c63;
 }
 
 @layer base {
@@ -15,9 +115,69 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply bg-canvas font-sans text-fg antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
   }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+  ::selection {
+    @apply bg-brand-500/25;
+  }
+}
+
+@layer components {
+  /* Soft colour wash behind the whole app. */
+  .app-backdrop {
+    background:
+      radial-gradient(60rem 40rem at 10% -10%, rgb(112 88 251 / 0.12), transparent 60%),
+      radial-gradient(50rem 30rem at 100% 0%, rgb(236 72 153 / 0.08), transparent 60%),
+      var(--canvas);
+  }
+  .dark .app-backdrop {
+    background:
+      radial-gradient(60rem 40rem at 10% -10%, rgb(112 88 251 / 0.22), transparent 60%),
+      radial-gradient(50rem 30rem at 100% 0%, rgb(236 72 153 / 0.12), transparent 60%),
+      var(--canvas);
+  }
+  .text-gradient {
+    @apply bg-gradient-to-r from-brand-500 via-violet-500 to-accent-500 bg-clip-text text-transparent;
+  }
+  .bg-brand-gradient {
+    @apply bg-gradient-to-br from-brand-600 via-violet-600 to-accent-500;
+  }
+  .glass {
+    @apply border border-white/40 bg-white/60 backdrop-blur-xl dark:border-white/10 dark:bg-white/5;
+  }
+  .skeleton {
+    @apply rounded-lg;
+    background: linear-gradient(
+      90deg,
+      var(--surface-3) 0%,
+      var(--surface-2) 50%,
+      var(--surface-3) 100%
+    );
+    background-size: 800px 100%;
+    animation: var(--animate-shimmer);
+  }
+  .grid-pattern {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.08) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
