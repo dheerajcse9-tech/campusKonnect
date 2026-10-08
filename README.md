@@ -36,20 +36,12 @@ Prerequisites: Node.js ≥ 20, and PostgreSQL 16 (or Docker).
 ```bash
 git clone https://github.com/dheerajcse9-tech/campusKonnect.git
 cd campusKonnect
-npm install
-
-# 1. Database
-docker compose up -d                       # or use a local PostgreSQL
-cp server/.env.example server/.env          # defaults work with docker-compose
-
-# 2. Schema and demo data
-npm run db:migrate -w server
-npm run db:seed -w server                   # prints demo logins (password: Password123)
-
-# 3. Run (two terminals)
-npm run dev:server                          # API on http://localhost:4000
-npm run dev:client                          # app on http://localhost:5173
+npm install        # includes a bundled PostgreSQL 16, so no Docker or database install is needed
+npm run setup      # creates the database, tables and demo data (prints demo logins; password: Password123)
+npm run dev        # starts database + API (:4000) + web app (:5173) and opens the browser
 ```
+
+There are also one-step installers that install Node.js and Git too: `scripts/install-windows.ps1` and `scripts/install-mac-linux.sh`. If you prefer your own PostgreSQL (Docker via `docker compose up -d`, a native install, or Neon), `npm run dev` detects and uses it.
 
 In development, emails (verification and reset links) are printed to the API console, and uploaded images are stored in `server/uploads/`.
 

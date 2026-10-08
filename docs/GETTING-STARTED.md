@@ -13,6 +13,43 @@ This guide gets CampusKonnect running on your own computer, step by step. You do
 | **Server (API)**          | The backend in `server/`. It runs on http://localhost:4000.                                                                                                                  |
 | **Client (web app)**      | The website in `client/`. It runs on http://localhost:5173, and this is what you open in the browser.                                                                        |
 
+## ⚡ Fastest way: the automatic installer
+
+The installer does **everything** for you:
+
+- installs Node.js and Git if you don't have them;
+- downloads the project and installs all its libraries, **including its own PostgreSQL database** (no Docker or SQL installation needed);
+- creates the tables, adds demo data and opens the app in your browser.
+
+**Windows 10/11**
+
+1. Download [`scripts/install-windows.ps1`](../scripts/install-windows.ps1) (on GitHub, open the file and click **Download raw file**) into a folder such as `Documents`.
+2. Open **PowerShell** in that folder (in File Explorer, Shift + right-click → _Open PowerShell window here_), then run:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File install-windows.ps1
+   ```
+3. Accept the installer prompts for Node.js and Git. If GitHub asks you to sign in, do so.
+
+**macOS / Linux**
+
+```bash
+bash install-mac-linux.sh
+```
+
+When it finishes, the app opens at **http://localhost:5173**. Sign in with `neha@college.edu` / `Password123`.
+
+**Next time**, open the `campusKonnect` folder in a terminal and run `npm run dev`. Press `Ctrl + C` to stop.
+
+If you already have Node.js and the code, the whole setup is just three commands:
+
+```bash
+npm install      # download libraries (including the bundled PostgreSQL)
+npm run setup    # create the database, tables and demo data
+npm run dev      # start database + server + website, and open the browser
+```
+
+The sections below explain the same steps by hand, if you want to understand them or prefer Docker or the cloud.
+
 ## Step 1: Install the tools (once)
 
 1. **Node.js 22 LTS** from https://nodejs.org (choose "LTS"). Check by running `node -v` in a terminal; it should print `v22…`.
@@ -33,6 +70,8 @@ npm install
 `npm install` downloads all the libraries the project needs. It can take a few minutes.
 
 ## Step 3: Get a database (pick ONE option)
+
+> If you use `npm run setup`, you can skip this step. It runs a bundled PostgreSQL automatically (data is stored in the `.local-db/` folder). The options below are alternatives.
 
 ### Option A: Free cloud database with Neon (easiest, nothing to install)
 

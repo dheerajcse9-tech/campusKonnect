@@ -7,6 +7,9 @@
     "client"
   ],
   "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "node scripts/dev.mjs",
+    "db:start": "node scripts/local-db.mjs",
     "dev:server": "npm run dev -w server",
     "dev:client": "npm run dev -w client",
     "build": "npm run build -w server && npm run build -w client",
@@ -20,6 +23,8 @@
     "node": ">=20"
   },
   "devDependencies": {
+    "embedded-postgres": "16.14.0-beta.17",
+    "pg": "^8.23.1",
     "prettier": "^3.9.9"
   }
 }

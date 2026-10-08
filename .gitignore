@@ -10,3 +10,4 @@ coverage/
 server/uploads/
 .vite/
 !server/.env.test
+.local-db/
