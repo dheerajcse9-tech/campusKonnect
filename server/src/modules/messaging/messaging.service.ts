@@ -99,10 +99,23 @@ export async function getMessages(conversationId: string, actor: Actor, after?: 
         })
       ).reverse();
 
-  await prisma.message.updateMany({
-    where: { conversationId, senderId: { not: actor.id }, readAt: null },
-    data: { readAt: new Date() },
-  });
+  const now = new Date();
+  await prisma.$transaction([
+    prisma.message.updateMany({
+      where: { conversationId, senderId: { not: actor.id }, readAt: null },
+      data: { readAt: now },
+    }),
+    // Reading the chat also clears its "new message" notification.
+    prisma.notification.updateMany({
+      where: {
+        userId: actor.id,
+        type: 'NEW_MESSAGE',
+        link: conversationLink(conversationId),
+        readAt: null,
+      },
+      data: { readAt: now },
+    }),
+  ]);
 
   const { request } = conversation;
   return {

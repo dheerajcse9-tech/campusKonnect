@@ -101,6 +101,15 @@ describe('approval-gated messaging', () => {
       where: { userId: seller.user.id, type: 'NEW_MESSAGE' },
     });
     expect(count).toBe(1);
+
+    // Opening the chat clears that notification.
+    await api()
+      .get(`/api/conversations/${conversationId}/messages`)
+      .set('Authorization', seller.auth);
+    const unread = await prisma.notification.count({
+      where: { userId: seller.user.id, type: 'NEW_MESSAGE', readAt: null },
+    });
+    expect(unread).toBe(0);
   });
 
   it('validates the message body', async () => {

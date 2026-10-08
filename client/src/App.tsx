@@ -11,6 +11,11 @@ import { HomePage } from './pages/marketplace/HomePage';
 import { ListingDetailPage } from './pages/marketplace/ListingDetailPage';
 import { EditListingPage, NewListingPage } from './pages/marketplace/ListingFormPage';
 import { MyListingsPage } from './pages/marketplace/MyListingsPage';
+import { ConversationPage } from './pages/messages/ConversationPage';
+import { ConversationsPage } from './pages/messages/ConversationsPage';
+import { NotificationsPage } from './pages/notifications/NotificationsPage';
+import { RequestDetailPage } from './pages/requests/RequestDetailPage';
+import { RequestsPage } from './pages/requests/RequestsPage';
 import { GuidelinesPage } from './pages/misc/GuidelinesPage';
 import { NotFoundPage } from './pages/misc/NotFoundPage';
 
@@ -54,6 +59,11 @@ export function App() {
           <Route path="listings/:id" element={<ListingDetailPage />} />
           <Route path="listings/:id/edit" element={<EditListingPage />} />
           <Route path="my-listings" element={<MyListingsPage />} />
+          <Route path="requests" element={<RequestsPage />} />
+          <Route path="requests/:id" element={<RequestDetailPage />} />
+          <Route path="messages" element={<ConversationsPage />} />
+          <Route path="messages/:id" element={<ConversationPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
