@@ -11,11 +11,12 @@ import {
   User,
   Users,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useCurrentUser, useAuth } from '../../auth/AuthContext';
 import { Avatar } from '../ui/Avatar';
 import { ButtonLink } from '../ui/Button';
+import { FullPageSpinner } from '../ui/Spinner';
 import { Logo } from './Logo';
 import { ThemeToggle } from './ThemeToggle';
 import { useUnreadCounts } from './useUnreadCounts';
@@ -155,7 +156,9 @@ export function AppLayout() {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 md:pb-10">
         <div key={location.pathname} className="animate-page-in">
-          <Outlet />
+          <Suspense fallback={<FullPageSpinner />}>
+            <Outlet />
+          </Suspense>
         </div>
       </main>
 

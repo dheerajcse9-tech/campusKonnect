@@ -11,13 +11,18 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>CampusKonnect · Your verified campus marketplace</title>
     <meta property="og:title" content="CampusKonnect" />
-    <meta property="og:description" content="Buy, sell, rent and ask seniors. Only verified students from your college." />
+    <meta
+      property="og:description"
+      content="Buy, sell, rent and ask seniors. Only verified students from your college."
+    />
     <script>
       // Apply the saved theme before first paint to avoid a light/dark flash.
       (function () {
         try {
           var t = localStorage.getItem('ck-theme');
-          var dark = t === 'dark' || ((!t || t === 'system') && matchMedia('(prefers-color-scheme: dark)').matches);
+          var dark =
+            t === 'dark' ||
+            ((!t || t === 'system') && matchMedia('(prefers-color-scheme: dark)').matches);
           if (dark) document.documentElement.classList.add('dark');
         } catch (e) {}
       })();
