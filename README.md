@@ -87,7 +87,7 @@ client/    React app: api/, auth/, components/, features/, pages/, theme/
 
 ## Quality
 
-- 99 automated server tests run against a real PostgreSQL database. They cover every endpoint, the authorisation rules, the request state machine, concurrency, rate limiting and production configuration checks.
+- 101 automated server tests run against a real PostgreSQL database. They cover every endpoint, the authorisation rules, the request state machine, concurrency, rate limiting and production configuration checks.
 - Client unit tests cover the token-refresh logic and formatting.
 - Every user journey in the project deck (buy, rent, Ask a Senior, moderation) has been verified end to end in a real browser.
 - CI on GitHub Actions runs format, lint, typecheck, tests and production builds on every push and pull request.

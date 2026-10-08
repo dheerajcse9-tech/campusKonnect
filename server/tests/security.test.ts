@@ -120,6 +120,24 @@ describe('rate limiting', () => {
     expect((await attempt('someone-else@college.edu')).status).toBe(200);
   });
 
+  it('caps emails sent to one address no matter which IP asks', async () => {
+    const app = appWith(
+      createLimiter({ windowMinutes: 60, max: 3, keyGenerator: emailKey, enabledInTests: true }),
+    );
+    for (const ip of ['1.1.1.1', '2.2.2.2', '3.3.3.3']) {
+      const res = await request(app)
+        .post('/')
+        .set('X-Forwarded-For', ip)
+        .send({ email: 'victim@college.edu' });
+      expect(res.status).toBe(200);
+    }
+    const flooded = await request(app)
+      .post('/')
+      .set('X-Forwarded-For', '4.4.4.4')
+      .send({ email: 'VICTIM@college.edu' });
+    expect(flooded.status).toBe(429);
+  });
+
   it('keys signed-in traffic by user so students behind one campus IP do not share a budget', async () => {
     const app = appWith(
       createLimiter({ windowMinutes: 1, max: 1, keyGenerator: userOrIpKey, enabledInTests: true }),

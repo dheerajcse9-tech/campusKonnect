@@ -196,6 +196,17 @@ describe('request rules and permissions', () => {
     expect(removed.status).toBe('CANCELLED');
   });
 
+  it('locks the price while a deal is in progress but still allows typo fixes', async () => {
+    const { seller, buyer, listing } = await setup();
+    const { body } = await sendRequest(buyer.auth, { listingId: listing.id });
+    await act(seller.auth, body.request.id, 'approve');
+    const patch = (data: Record<string, unknown>) =>
+      api().patch(`/api/listings/${listing.id}`).set('Authorization', seller.auth).send(data);
+
+    expect((await patch({ price: listing.price + 500 })).status).toBe(409);
+    expect((await patch({ price: listing.price, title: 'Fixed typo in title' })).status).toBe(200);
+  });
+
   it('refuses to mark a reserved listing sold without completing the request', async () => {
     const { seller, buyer, listing } = await setup();
     const { body } = await sendRequest(buyer.auth, { listingId: listing.id });

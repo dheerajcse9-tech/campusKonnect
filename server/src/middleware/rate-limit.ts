@@ -74,6 +74,17 @@ export const loginAccountLimiter = createLimiter({
   keyGenerator: emailKey,
 });
 
+/**
+ * Endpoints that send an email to the address in the body (password reset,
+ * resend verification). Limited per address so nobody can flood a student's
+ * inbox, even with spoofed or rotating IPs.
+ */
+export const emailSendLimiter = createLimiter({
+  windowMinutes: 60,
+  max: 5,
+  keyGenerator: emailKey,
+});
+
 /** Content-creating endpoints (listings, posts, reports, messages), per user. */
 export const writeLimiter = createLimiter({ windowMinutes: 1, max: 20, keyGenerator: userOrIpKey });
 

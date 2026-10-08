@@ -136,6 +136,16 @@ export async function updateListing(listingId: string, actor: Actor, input: Upda
   if (listing.type === 'SELL' && (input.rentPeriod || input.deposit != null)) {
     throw new BadRequestError('Rent period and deposit only apply to rentals');
   }
+  // The buyer agreed to these terms when the request was approved.
+  const changesTerms =
+    (input.price !== undefined && input.price !== listing.price) ||
+    (input.rentPeriod !== undefined && input.rentPeriod !== listing.rentPeriod) ||
+    (input.deposit !== undefined && input.deposit !== listing.deposit);
+  if (listing.status === 'RESERVED' && changesTerms) {
+    throw new ConflictError(
+      "You can't change the price or rental terms while a deal is in progress",
+    );
+  }
   return prisma.listing.update({
     where: { id: listingId },
     data: input,

@@ -28,6 +28,8 @@ CampusKonnect handles real students' identities, phone numbers and in-person mee
 | Race conditions              | Optimistic concurrency on request transitions. Atomic listing reservation. Advisory lock against duplicate requests                                                  | `transactions.service.ts`                 |
 | Rogue or mistaken moderation | Admin actions are atomic and audit-logged with a reason. Admins cannot ban other admins. The admin role is granted only from the server CLI, and that is audited too | `admin.service.ts`, `scripts/set-role.ts` |
 | Misconfigured production     | The server refuses to start in production without unique secrets, https URLs, real email (Resend) and persistent image storage (Cloudinary)                          | `config/env.ts`                           |
+| Inbox flooding               | Password-reset and verification emails are capped at 5 per address per hour, regardless of IP                                                                        | `rate-limit.ts`                           |
+| Bait-and-switch pricing      | Price and rental terms are locked while a deal is approved                                                                                                           | `listings.service.ts`                     |
 | Abuse and flooding           | Per-user write limits. Baseline API limits. One open request per listing per student. Notification coalescing for chat                                               | `rate-limit.ts`                           |
 
 ### Campus NAT and rate limiting
