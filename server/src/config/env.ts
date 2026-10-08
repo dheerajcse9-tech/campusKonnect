@@ -5,14 +5,12 @@ import { z } from 'zod';
 const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
 dotenv.config({ path: path.resolve(process.cwd(), envFile), quiet: true });
 
-const csv = z
-  .string()
-  .transform((value) =>
-    value
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean),
-  );
+const csv = z.string().transform((value) =>
+  value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean),
+);
 
 const emptyToUndefined = z
   .string()

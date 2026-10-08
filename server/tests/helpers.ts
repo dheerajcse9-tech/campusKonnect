@@ -1,4 +1,4 @@
-import type { Role, User } from '@prisma/client';
+import type { Prisma, Role, User } from '@prisma/client';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { hashPassword } from '../src/lib/crypto.js';
@@ -42,7 +42,8 @@ export async function createAuthedUser(overrides: Parameters<typeof createUser>[
 }
 
 export function outbox() {
-  if (!(emailService instanceof ConsoleEmailService)) throw new Error('Expected console email adapter');
+  if (!(emailService instanceof ConsoleEmailService))
+    throw new Error('Expected console email adapter');
   return emailService.outbox;
 }
 
@@ -60,4 +61,23 @@ export function refreshCookie(res: request.Response): string {
   const cookie = cookies?.find((c) => c.startsWith('ck_refresh='));
   if (!cookie) throw new Error('No refresh cookie set');
   return cookie.split(';')[0];
+}
+
+export async function createListing(
+  sellerId: string,
+  overrides: Partial<Prisma.ListingUncheckedCreateInput> = {},
+) {
+  counter += 1;
+  return prisma.listing.create({
+    data: {
+      sellerId,
+      title: `Item ${counter}`,
+      description: 'A perfectly good item in decent shape.',
+      type: 'SELL',
+      category: 'BOOKS',
+      condition: 'GOOD',
+      price: 100 * counter,
+      ...overrides,
+    },
+  });
 }

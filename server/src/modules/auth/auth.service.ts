@@ -229,7 +229,10 @@ export async function changePassword(
 
   const keepHash = currentRefreshToken ? hashToken(currentRefreshToken) : undefined;
   await prisma.$transaction([
-    prisma.user.update({ where: { id: userId }, data: { passwordHash: await hashPassword(newPassword) } }),
+    prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: await hashPassword(newPassword) },
+    }),
     prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null, ...(keepHash ? { tokenHash: { not: keepHash } } : {}) },
       data: { revokedAt: new Date() },

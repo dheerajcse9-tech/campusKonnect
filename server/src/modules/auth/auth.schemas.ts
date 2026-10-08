@@ -1,10 +1,6 @@
 import { z } from 'zod';
 
-const email = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .pipe(z.email('Enter a valid email address'));
+const email = z.string().trim().toLowerCase().pipe(z.email('Enter a valid email address'));
 
 /** bcrypt only uses the first 72 bytes, so cap the length there. */
 export const passwordSchema = z

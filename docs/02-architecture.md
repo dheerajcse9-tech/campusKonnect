@@ -26,29 +26,29 @@ CampusKonnect is **one deployable backend application with cleanly separated int
 
 Each backend module lives in `server/src/modules/<module>/` and follows the same layering:
 
-| File | Responsibility | May depend on |
-| --- | --- | --- |
-| `*.routes.ts` | HTTP wiring: path, middleware (auth, validation, rate limit) → controller | controller, middleware |
-| `*.controller.ts` | Translates HTTP ⇄ domain: reads validated input, calls the service, shapes the response | service |
-| `*.service.ts` | Business rules, authorisation decisions, transactions | Prisma client, other services, shared libs |
-| `*.schemas.ts` | Zod schemas for request validation (single source of truth for input types) | zod |
+| File              | Responsibility                                                                          | May depend on                              |
+| ----------------- | --------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `*.routes.ts`     | HTTP wiring: path, middleware (auth, validation, rate limit) → controller               | controller, middleware                     |
+| `*.controller.ts` | Translates HTTP ⇄ domain: reads validated input, calls the service, shapes the response | service                                    |
+| `*.service.ts`    | Business rules, authorisation decisions, transactions                                   | Prisma client, other services, shared libs |
+| `*.schemas.ts`    | Zod schemas for request validation (single source of truth for input types)             | zod                                        |
 
 Dependencies point **inwards only**: routes → controller → service → data. Services never touch `req`/`res`, which keeps them unit-testable. Cross-module calls go through a module's service, never its tables directly. The one exception is read-only joins that Prisma relations express naturally.
 
 ## 2.3 Cross-cutting concerns (`server/src/lib`, `server/src/middleware`)
 
-| Concern | Implementation |
-| --- | --- |
-| Configuration | `config/env.ts`: environment variables validated with zod at boot (fail fast) |
-| Errors | `AppError` hierarchy plus one central error middleware that maps errors to a uniform JSON shape `{ error: { code, message, details? } }` |
-| Validation | `validate({ body, query, params })` middleware using zod |
-| AuthN | `requireAuth` verifies the JWT access token and loads the user's role and status |
-| AuthZ | `requireRole('ADMIN')` plus ownership checks inside services |
-| Logging | `pino` structured logs with a request id |
-| Rate limiting | `express-rate-limit` on auth and other sensitive routes |
-| Email | `EmailService` interface → `ResendEmailService` (prod) / `ConsoleEmailService` (dev, test) |
-| File storage | `StorageService` interface → `CloudinaryStorage` (prod) / `LocalDiskStorage` (dev, test) |
-| Audit | `auditLog.record()` called by every admin action |
+| Concern       | Implementation                                                                                                                           |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Configuration | `config/env.ts`: environment variables validated with zod at boot (fail fast)                                                            |
+| Errors        | `AppError` hierarchy plus one central error middleware that maps errors to a uniform JSON shape `{ error: { code, message, details? } }` |
+| Validation    | `validate({ body, query, params })` middleware using zod                                                                                 |
+| AuthN         | `requireAuth` verifies the JWT access token and loads the user's role and status                                                         |
+| AuthZ         | `requireRole('ADMIN')` plus ownership checks inside services                                                                             |
+| Logging       | `pino` structured logs with a request id                                                                                                 |
+| Rate limiting | `express-rate-limit` on auth and other sensitive routes                                                                                  |
+| Email         | `EmailService` interface → `ResendEmailService` (prod) / `ConsoleEmailService` (dev, test)                                               |
+| File storage  | `StorageService` interface → `CloudinaryStorage` (prod) / `LocalDiskStorage` (dev, test)                                                 |
+| Audit         | `auditLog.record()` called by every admin action                                                                                         |
 
 Email and storage use **dependency inversion**. The application depends on an interface, and the concrete adapter is chosen from configuration at startup. This satisfies NFR-9: the system runs fully offline.
 
@@ -99,13 +99,13 @@ Buyer                    API                          Seller
 
 ## 2.6 Deployment view
 
-| Component | Host | Notes |
-| --- | --- | --- |
-| Web client | Vercel | Static build; `VITE_API_URL` points at the API |
-| API | Render or Railway | `npm run build && npm start`; runs `prisma migrate deploy` on release |
-| Database | Managed PostgreSQL (Render, Railway, Neon) | |
-| Images | Cloudinary | Optional. Falls back to local disk |
-| Email | Resend | Optional. Falls back to console logging |
+| Component  | Host                                       | Notes                                                                 |
+| ---------- | ------------------------------------------ | --------------------------------------------------------------------- |
+| Web client | Vercel                                     | Static build; `VITE_API_URL` points at the API                        |
+| API        | Render or Railway                          | `npm run build && npm start`; runs `prisma migrate deploy` on release |
+| Database   | Managed PostgreSQL (Render, Railway, Neon) |                                                                       |
+| Images     | Cloudinary                                 | Optional. Falls back to local disk                                    |
+| Email      | Resend                                     | Optional. Falls back to console logging                               |
 
 For local development, `docker-compose.yml` starts PostgreSQL.
 

@@ -20,6 +20,10 @@ export function toSkipTake({ page, limit }: PaginationInput): { skip: number; ta
   return { skip: (page - 1) * limit, take: limit };
 }
 
-export function paginated<T>(items: T[], total: number, { page, limit }: PaginationInput): Paginated<T> {
+export function paginated<T>(
+  items: T[],
+  total: number,
+  { page, limit }: PaginationInput,
+): Paginated<T> {
   return { items, page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) };
 }

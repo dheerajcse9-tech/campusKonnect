@@ -53,7 +53,12 @@ export class LocalDiskStorage implements StorageService {
 
 export class CloudinaryStorage implements StorageService {
   constructor(cloudName: string, apiKey: string, apiSecret: string) {
-    cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret, secure: true });
+    cloudinary.config({
+      cloud_name: cloudName,
+      api_key: apiKey,
+      api_secret: apiSecret,
+      secure: true,
+    });
   }
 
   upload(file: UploadInput, folder: string): Promise<StoredFile> {
@@ -86,5 +91,9 @@ export class CloudinaryStorage implements StorageService {
 
 export const storageService: StorageService =
   env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET
-    ? new CloudinaryStorage(env.CLOUDINARY_CLOUD_NAME, env.CLOUDINARY_API_KEY, env.CLOUDINARY_API_SECRET)
+    ? new CloudinaryStorage(
+        env.CLOUDINARY_CLOUD_NAME,
+        env.CLOUDINARY_API_KEY,
+        env.CLOUDINARY_API_SECRET,
+      )
     : new LocalDiskStorage(LOCAL_UPLOAD_DIR, env.API_URL);

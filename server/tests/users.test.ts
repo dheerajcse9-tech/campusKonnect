@@ -40,12 +40,20 @@ describe('own profile', () => {
       .set('Authorization', auth)
       .send({ name: 'New Name', department: 'ECE', year: 3, bio: 'Hello', phone: '' });
     expect(res.status).toBe(200);
-    expect(res.body.user).toMatchObject({ name: 'New Name', department: 'ECE', year: 3, phone: null });
+    expect(res.body.user).toMatchObject({
+      name: 'New Name',
+      department: 'ECE',
+      year: 3,
+      phone: null,
+    });
   });
 
   it('refuses to change protected fields such as role', async () => {
     const { auth } = await createAuthedUser();
-    const res = await api().patch('/api/users/me').set('Authorization', auth).send({ role: 'ADMIN' });
+    const res = await api()
+      .patch('/api/users/me')
+      .set('Authorization', auth)
+      .send({ role: 'ADMIN' });
     expect(res.status).toBe(400);
   });
 
@@ -90,7 +98,8 @@ describe('public profile', () => {
 describe('change password', () => {
   it('requires the current password and signs out other sessions', async () => {
     const { user, auth } = await createAuthedUser();
-    const login = () => api().post('/api/auth/login').send({ email: user.email, password: DEFAULT_PASSWORD });
+    const login = () =>
+      api().post('/api/auth/login').send({ email: user.email, password: DEFAULT_PASSWORD });
     const otherDevice = refreshCookie(await login());
     const thisDevice = refreshCookie(await login());
 

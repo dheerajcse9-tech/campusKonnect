@@ -52,7 +52,12 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   }
 
   // Malformed JSON body from express.json()
-  if (typeof err === 'object' && err !== null && 'type' in err && err.type === 'entity.parse.failed') {
+  if (
+    typeof err === 'object' &&
+    err !== null &&
+    'type' in err &&
+    err.type === 'entity.parse.failed'
+  ) {
     res.status(400).json(body('BAD_REQUEST', 'Malformed JSON body'));
     return;
   }

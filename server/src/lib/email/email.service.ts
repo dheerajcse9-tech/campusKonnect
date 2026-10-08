@@ -17,7 +17,10 @@ export interface EmailService {
 export class ResendEmailService implements EmailService {
   private readonly client: Resend;
 
-  constructor(apiKey: string, private readonly from: string) {
+  constructor(
+    apiKey: string,
+    private readonly from: string,
+  ) {
     this.client = new Resend(apiKey);
   }
 

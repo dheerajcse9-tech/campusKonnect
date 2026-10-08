@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isAllowedCollegeEmail } from '../src/modules/auth/auth.service.js';
-import {
-  DEFAULT_PASSWORD,
-  api,
-  createUser,
-  lastEmailToken,
-  refreshCookie,
-} from './helpers.js';
+import { DEFAULT_PASSWORD, api, createUser, lastEmailToken, refreshCookie } from './helpers.js';
 
 const newStudent = {
   name: 'Asha Rao',
@@ -77,8 +71,12 @@ describe('registration and email verification', () => {
 
   it('resends verification without revealing whether an account exists', async () => {
     await createUser({ email: 'pending@college.edu', verified: false });
-    const known = await api().post('/api/auth/resend-verification').send({ email: 'pending@college.edu' });
-    const unknown = await api().post('/api/auth/resend-verification').send({ email: 'nobody@college.edu' });
+    const known = await api()
+      .post('/api/auth/resend-verification')
+      .send({ email: 'pending@college.edu' });
+    const unknown = await api()
+      .post('/api/auth/resend-verification')
+      .send({ email: 'nobody@college.edu' });
     expect(known.status).toBe(200);
     expect(unknown.status).toBe(200);
     expect(known.body.message).toBe(unknown.body.message);
@@ -89,8 +87,12 @@ describe('registration and email verification', () => {
 describe('login', () => {
   it('uses the same error for unknown email and wrong password', async () => {
     await createUser({ email: 'known@college.edu' });
-    const wrongPw = await api().post('/api/auth/login').send({ email: 'known@college.edu', password: 'nope' });
-    const unknown = await api().post('/api/auth/login').send({ email: 'x@college.edu', password: 'nope' });
+    const wrongPw = await api()
+      .post('/api/auth/login')
+      .send({ email: 'known@college.edu', password: 'nope' });
+    const unknown = await api()
+      .post('/api/auth/login')
+      .send({ email: 'x@college.edu', password: 'nope' });
     expect(wrongPw.status).toBe(401);
     expect(unknown.status).toBe(401);
     expect(wrongPw.body.error.message).toBe(unknown.body.error.message);
@@ -157,11 +159,15 @@ describe('password reset', () => {
       .send({ email: 'forgetful@college.edu', password: DEFAULT_PASSWORD });
     const cookie = refreshCookie(login);
 
-    const forgot = await api().post('/api/auth/forgot-password').send({ email: 'forgetful@college.edu' });
+    const forgot = await api()
+      .post('/api/auth/forgot-password')
+      .send({ email: 'forgetful@college.edu' });
     expect(forgot.status).toBe(200);
 
     const token = lastEmailToken('forgetful@college.edu');
-    const reset = await api().post('/api/auth/reset-password').send({ token, password: 'BrandNew99' });
+    const reset = await api()
+      .post('/api/auth/reset-password')
+      .send({ token, password: 'BrandNew99' });
     expect(reset.status).toBe(200);
 
     expect((await api().post('/api/auth/refresh').set('Cookie', cookie)).status).toBe(401);

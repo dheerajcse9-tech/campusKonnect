@@ -9,3 +9,8 @@ export function currentUser(req: Request): NonNullable<Request['user']> {
   if (!req.user) throw new UnauthorizedError();
   return req.user;
 }
+
+/** Buffers of the files multer stored for `upload.array(...)`. */
+export function uploadedBuffers(req: Request): Buffer[] {
+  return Array.isArray(req.files) ? req.files.map((file) => file.buffer) : [];
+}

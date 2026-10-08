@@ -24,22 +24,22 @@ User 1───* Listing 1───* ListingImage
 
 ## 3.2 Entities
 
-| Entity | Purpose | Notable fields |
-| --- | --- | --- |
-| `User` | A verified student or admin | `email` (unique, college domain), `passwordHash`, `role` (STUDENT/ADMIN), `status` (ACTIVE/BANNED), `emailVerifiedAt` |
-| `RefreshToken` | Rotating refresh tokens | `tokenHash` (SHA-256), `expiresAt`, `revokedAt` |
-| `EmailVerificationToken`, `PasswordResetToken` | One-time email tokens | `tokenHash`, `expiresAt`, `usedAt` |
-| `Listing` | An item for sale or rent | `type` (SELL/RENT), `category`, `condition`, `price`, `rentPeriod`, `deposit`, `status` |
-| `ListingImage` | Ordered listing images | `url`, `storageKey`, `position` |
-| `TransactionRequest` | A buy or rent request and its lifecycle | `status`, `type`, `message`, `rentStartDate`, `rentEndDate`, `sellerId` (denormalised for fast "incoming" queries) |
-| `Conversation` | Private chat unlocked by an approved request | `requestId` (unique, 1:1) |
-| `Message` | A chat message | `body`, `senderId`, `readAt` |
-| `Notification` | An in-app notification | `type`, `title`, `body`, `link`, `readAt` |
-| `Post` | A community discussion or doubt | `type` (DISCUSSION/DOUBT), `tags[]`, `upvoteCount`, `commentCount`, `status` |
-| `Comment` | An answer or comment on a post | `upvoteCount`, `status` |
-| `PostVote`, `CommentVote` | One vote per user per target | Composite primary key |
-| `Report` | A user report about content or a user | `targetType`, `targetId`, `reason`, `status`, `resolution` |
-| `AuditLog` | Append-only record of admin actions | `actorId`, `action`, `targetType`, `targetId`, `metadata` (JSON) |
+| Entity                                         | Purpose                                      | Notable fields                                                                                                        |
+| ---------------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `User`                                         | A verified student or admin                  | `email` (unique, college domain), `passwordHash`, `role` (STUDENT/ADMIN), `status` (ACTIVE/BANNED), `emailVerifiedAt` |
+| `RefreshToken`                                 | Rotating refresh tokens                      | `tokenHash` (SHA-256), `expiresAt`, `revokedAt`                                                                       |
+| `EmailVerificationToken`, `PasswordResetToken` | One-time email tokens                        | `tokenHash`, `expiresAt`, `usedAt`                                                                                    |
+| `Listing`                                      | An item for sale or rent                     | `type` (SELL/RENT), `category`, `condition`, `price`, `rentPeriod`, `deposit`, `status`                               |
+| `ListingImage`                                 | Ordered listing images                       | `url`, `storageKey`, `position`                                                                                       |
+| `TransactionRequest`                           | A buy or rent request and its lifecycle      | `status`, `type`, `message`, `rentStartDate`, `rentEndDate`, `sellerId` (denormalised for fast "incoming" queries)    |
+| `Conversation`                                 | Private chat unlocked by an approved request | `requestId` (unique, 1:1)                                                                                             |
+| `Message`                                      | A chat message                               | `body`, `senderId`, `readAt`                                                                                          |
+| `Notification`                                 | An in-app notification                       | `type`, `title`, `body`, `link`, `readAt`                                                                             |
+| `Post`                                         | A community discussion or doubt              | `type` (DISCUSSION/DOUBT), `tags[]`, `upvoteCount`, `commentCount`, `status`                                          |
+| `Comment`                                      | An answer or comment on a post               | `upvoteCount`, `status`                                                                                               |
+| `PostVote`, `CommentVote`                      | One vote per user per target                 | Composite primary key                                                                                                 |
+| `Report`                                       | A user report about content or a user        | `targetType`, `targetId`, `reason`, `status`, `resolution`                                                            |
+| `AuditLog`                                     | Append-only record of admin actions          | `actorId`, `action`, `targetType`, `targetId`, `metadata` (JSON)                                                      |
 
 ## 3.3 Enumerations
 
@@ -67,13 +67,13 @@ Terminal states are REJECTED, CANCELLED and COMPLETED. The state machine is impl
 
 Listing side effects:
 
-| Event | Listing status |
-| --- | --- |
-| Request approved | ACTIVE → RESERVED |
-| Approved request cancelled | RESERVED → ACTIVE |
-| SELL request completed | RESERVED → SOLD. Other pending requests → REJECTED |
-| RENT request completed | RESERVED → ACTIVE (item returned) |
-| Listing removed by owner or admin | → REMOVED. Open requests → CANCELLED |
+| Event                             | Listing status                                     |
+| --------------------------------- | -------------------------------------------------- |
+| Request approved                  | ACTIVE → RESERVED                                  |
+| Approved request cancelled        | RESERVED → ACTIVE                                  |
+| SELL request completed            | RESERVED → SOLD. Other pending requests → REJECTED |
+| RENT request completed            | RESERVED → ACTIVE (item returned)                  |
+| Listing removed by owner or admin | → REMOVED. Open requests → CANCELLED               |
 
 ## 3.5 Design decisions
 

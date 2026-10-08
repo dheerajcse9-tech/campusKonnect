@@ -1,6 +1,11 @@
 import type { EmailMessage } from './email.service.js';
 
-function layout(heading: string, paragraph: string, actionLabel: string, actionUrl: string): string {
+function layout(
+  heading: string,
+  paragraph: string,
+  actionLabel: string,
+  actionUrl: string,
+): string {
   return `<!doctype html>
 <html><body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f8fafc;padding:24px">
   <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:12px;padding:32px;border:1px solid #e2e8f0">
