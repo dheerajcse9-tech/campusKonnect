@@ -29,6 +29,8 @@ CampusKonnect is a private, campus-only platform. Verified students can **buy, s
 
 ## Quick start (local development)
 
+> **New to databases or Docker?** Follow the step-by-step [Getting started guide](docs/GETTING-STARTED.md). It explains every step, offers a no-install cloud database option, and includes a manual test checklist.
+
 Prerequisites: Node.js ≥ 20, and PostgreSQL 16 (or Docker).
 
 ```bash

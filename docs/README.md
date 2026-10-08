@@ -1,5 +1,7 @@
 # Design documentation
 
+New here? Start with the [Getting started guide](GETTING-STARTED.md).
+
 | #   | Document                                                     |
 | --- | ------------------------------------------------------------ |
 | 1   | [Requirements (SRS)](01-requirements.md)                     |
