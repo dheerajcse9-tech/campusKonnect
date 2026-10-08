@@ -1,0 +1,403 @@
+// CampusKonnect data model. See docs/03-database-design.md for rationale.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Enums ─────────────────────────────
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BANNED
+}
+
+enum ListingType {
+  SELL
+  RENT
+}
+
+enum ListingCategory {
+  BOOKS
+  ELECTRONICS
+  CYCLES
+  FURNITURE
+  CLOTHING
+  STATIONERY
+  SPORTS
+  HOSTEL_ESSENTIALS
+  OTHER
+}
+
+enum ItemCondition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  POOR
+}
+
+enum ListingStatus {
+  ACTIVE
+  RESERVED
+  SOLD
+  REMOVED
+}
+
+enum RentPeriod {
+  DAY
+  WEEK
+  MONTH
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum NotificationType {
+  REQUEST_RECEIVED
+  REQUEST_APPROVED
+  REQUEST_REJECTED
+  REQUEST_CANCELLED
+  REQUEST_COMPLETED
+  NEW_MESSAGE
+  NEW_COMMENT
+  REPORT_UPDATE
+  SYSTEM
+}
+
+enum PostType {
+  DISCUSSION
+  DOUBT
+}
+
+enum ContentStatus {
+  ACTIVE
+  REMOVED
+}
+
+enum ReportTargetType {
+  USER
+  LISTING
+  POST
+  COMMENT
+}
+
+enum ReportReason {
+  SPAM
+  SCAM
+  INAPPROPRIATE
+  HARASSMENT
+  PROHIBITED_ITEM
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+// ─────────────────────────── Identity ────────────────────────────
+
+model User {
+  id              String     @id @default(uuid()) @db.Uuid
+  email           String     @unique
+  passwordHash    String
+  name            String
+  department      String?
+  year            Int?
+  phone           String?
+  bio             String?
+  avatarUrl       String?
+  role            Role       @default(STUDENT)
+  status          UserStatus @default(ACTIVE)
+  banReason       String?
+  emailVerifiedAt DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  refreshTokens      RefreshToken[]
+  verificationTokens EmailVerificationToken[]
+  passwordResets     PasswordResetToken[]
+  listings           Listing[]
+  outgoingRequests   TransactionRequest[]     @relation("Requester")
+  incomingRequests   TransactionRequest[]     @relation("Seller")
+  messages           Message[]
+  notifications      Notification[]
+  posts              Post[]
+  comments           Comment[]
+  postVotes          PostVote[]
+  commentVotes       CommentVote[]
+  reportsFiled       Report[]                 @relation("Reporter")
+  reportsResolved    Report[]                 @relation("Resolver")
+  auditLogs          AuditLog[]
+
+  @@index([status])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ────────────────────────── Marketplace ──────────────────────────
+
+model Listing {
+  id          String          @id @default(uuid()) @db.Uuid
+  sellerId    String          @db.Uuid
+  title       String
+  description String
+  type        ListingType
+  category    ListingCategory
+  condition   ItemCondition
+  /// Sale price, or rent rate per `rentPeriod`, in whole rupees.
+  price       Int
+  rentPeriod  RentPeriod?
+  /// Refundable deposit for rentals, in whole rupees.
+  deposit     Int?
+  location    String?
+  status      ListingStatus   @default(ACTIVE)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  seller   User                 @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  images   ListingImage[]
+  requests TransactionRequest[]
+
+  @@index([status, createdAt])
+  @@index([category])
+  @@index([sellerId])
+}
+
+model ListingImage {
+  id         String   @id @default(uuid()) @db.Uuid
+  listingId  String   @db.Uuid
+  url        String
+  storageKey String
+  position   Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+}
+
+// ───────────────────────── Transactions ──────────────────────────
+
+model TransactionRequest {
+  id            String        @id @default(uuid()) @db.Uuid
+  listingId     String        @db.Uuid
+  requesterId   String        @db.Uuid
+  sellerId      String        @db.Uuid
+  type          ListingType
+  status        RequestStatus @default(PENDING)
+  message       String?
+  rentStartDate DateTime?
+  rentEndDate   DateTime?
+  respondedAt   DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  listing      Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  requester    User          @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  seller       User          @relation("Seller", fields: [sellerId], references: [id], onDelete: Cascade)
+  conversation Conversation?
+
+  @@index([sellerId, status])
+  @@index([requesterId, status])
+  @@index([listingId, status])
+}
+
+// ─────────────────────────── Messaging ───────────────────────────
+
+model Conversation {
+  id        String   @id @default(uuid()) @db.Uuid
+  requestId String   @unique @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  request  TransactionRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  messages Message[]
+}
+
+model Message {
+  id             String    @id @default(uuid()) @db.Uuid
+  conversationId String    @db.Uuid
+  senderId       String    @db.Uuid
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  type      NotificationType
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+// ─────────────────────────── Community ───────────────────────────
+
+model Post {
+  id           String        @id @default(uuid()) @db.Uuid
+  authorId     String        @db.Uuid
+  type         PostType      @default(DISCUSSION)
+  title        String
+  body         String
+  tags         String[]
+  upvoteCount  Int           @default(0)
+  commentCount Int           @default(0)
+  status       ContentStatus @default(ACTIVE)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  author   User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments Comment[]
+  votes    PostVote[]
+
+  @@index([status, createdAt])
+  @@index([status, upvoteCount])
+  @@index([authorId])
+}
+
+model Comment {
+  id          String        @id @default(uuid()) @db.Uuid
+  postId      String        @db.Uuid
+  authorId    String        @db.Uuid
+  body        String
+  upvoteCount Int           @default(0)
+  status      ContentStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  post   Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  votes  CommentVote[]
+
+  @@index([postId, status])
+}
+
+model PostVote {
+  userId    String   @db.Uuid
+  postId    String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@index([postId])
+}
+
+model CommentVote {
+  userId    String   @db.Uuid
+  commentId String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+  @@index([commentId])
+}
+
+// ──────────────────────── Trust & Safety ─────────────────────────
+
+model Report {
+  id             String           @id @default(uuid()) @db.Uuid
+  reporterId     String           @db.Uuid
+  targetType     ReportTargetType
+  targetId       String           @db.Uuid
+  reason         ReportReason
+  details        String?
+  status         ReportStatus     @default(OPEN)
+  resolvedById   String?          @db.Uuid
+  resolutionNote String?
+  resolvedAt     DateTime?
+  createdAt      DateTime         @default(now())
+
+  reporter   User  @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  resolvedBy User? @relation("Resolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+}
+
+/// Append-only record of administrative actions.
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([targetType, targetId])
+}

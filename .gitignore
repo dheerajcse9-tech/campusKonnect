@@ -9,3 +9,4 @@ coverage/
 .DS_Store
 server/uploads/
 .vite/
+!server/.env.test
