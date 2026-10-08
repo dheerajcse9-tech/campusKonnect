@@ -121,8 +121,9 @@ export async function login(input: LoginInput): Promise<Session> {
 }
 
 /**
- * Rotates a refresh token. Presenting an already-revoked token is treated as
- * theft: every session for that user is revoked (ADR-0003).
+ * Rotates a refresh token. Presenting a token that was already rotated is
+ * treated as theft: every session for that user is revoked (ADR-0003).
+ * Tokens revoked by logout or a password change are simply rejected.
  */
 export async function refresh(rawToken: string | undefined): Promise<Session> {
   if (!rawToken) throw new UnauthorizedError('No session');
@@ -133,14 +134,20 @@ export async function refresh(rawToken: string | undefined): Promise<Session> {
   });
   if (!record) throw new UnauthorizedError('Invalid session');
 
-  if (record.revokedAt) {
+  if (record.rotatedAt) {
     await revokeAllSessions(record.userId);
     logger.warn({ userId: record.userId }, 'Refresh token reuse detected; all sessions revoked');
     throw new UnauthorizedError('Session expired, please sign in again');
   }
-  if (record.expiresAt < new Date()) throw new UnauthorizedError('Session expired, please sign in again');
+  if (record.revokedAt || record.expiresAt < new Date()) {
+    throw new UnauthorizedError('Session expired, please sign in again');
+  }
 
-  await prisma.refreshToken.update({ where: { id: record.id }, data: { revokedAt: new Date() } });
+  const now = new Date();
+  await prisma.refreshToken.update({
+    where: { id: record.id },
+    data: { revokedAt: now, rotatedAt: now },
+  });
 
   if (record.user.status === 'BANNED') {
     await revokeAllSessions(record.userId);
@@ -204,6 +211,28 @@ export async function resetPassword(token: string, password: string): Promise<vo
     prisma.refreshToken.updateMany({
       where: { userId: record.userId, revokedAt: null },
       data: { revokedAt: now },
+    }),
+  ]);
+}
+
+/** Changes the password and signs out every other session (the current one is kept). */
+export async function changePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+  currentRefreshToken: string | undefined,
+): Promise<void> {
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+  if (!(await verifyPassword(currentPassword, user.passwordHash))) {
+    throw new BadRequestError('Current password is incorrect');
+  }
+
+  const keepHash = currentRefreshToken ? hashToken(currentRefreshToken) : undefined;
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: userId }, data: { passwordHash: await hashPassword(newPassword) } }),
+    prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null, ...(keepHash ? { tokenHash: { not: keepHash } } : {}) },
+      data: { revokedAt: new Date() },
     }),
   ]);
 }

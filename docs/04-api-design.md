@@ -31,6 +31,7 @@ REST over JSON. Base path: `/api`. All endpoints except those under `/api/auth` 
 | POST | `/auth/logout` | cookie | Revokes the refresh token |
 | POST | `/auth/forgot-password` | `{ email }` | Sends a reset link (always 200) |
 | POST | `/auth/reset-password` | `{ token, password }` | Sets a new password and revokes all sessions |
+| POST | `/auth/change-password` | `{ currentPassword, newPassword }` | Authenticated. Signs out every other session |
 
 ### Users (`/users`)
 | Method | Path | Description |
@@ -38,7 +39,6 @@ REST over JSON. Base path: `/api`. All endpoints except those under `/api/auth` 
 | GET | `/users/me` | Current user's private profile |
 | PATCH | `/users/me` | Update profile |
 | POST | `/users/me/avatar` | Upload avatar (multipart `image`) |
-| POST | `/users/me/password` | Change password `{ currentPassword, newPassword }` |
 | GET | `/users/:id` | Public profile plus active listings |
 
 ### Listings (`/listings`)

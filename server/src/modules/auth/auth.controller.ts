@@ -1,6 +1,8 @@
 import type { CookieOptions, Request, Response } from 'express';
 import { env, isProduction } from '../../config/env.js';
+import { currentUser } from '../../lib/http.js';
 import {
+  changePasswordSchema,
   emailOnlySchema,
   loginSchema,
   registerSchema,
@@ -81,4 +83,15 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
   const { token, password } = resetPasswordSchema.parse(req.body);
   await authService.resetPassword(token, password);
   res.json({ message: 'Password updated. Please sign in with your new password.' });
+}
+
+export async function changePassword(req: Request, res: Response): Promise<void> {
+  const { currentPassword, newPassword } = changePasswordSchema.parse(req.body);
+  await authService.changePassword(
+    currentUser(req).id,
+    currentPassword,
+    newPassword,
+    readRefreshCookie(req),
+  );
+  res.json({ message: 'Password changed. Other devices have been signed out.' });
 }

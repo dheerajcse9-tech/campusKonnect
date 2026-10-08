@@ -123,6 +123,7 @@ model User {
   phone           String?
   bio             String?
   avatarUrl       String?
+  avatarKey       String?
   role            Role       @default(STUDENT)
   status          UserStatus @default(ACTIVE)
   banReason       String?
@@ -155,6 +156,8 @@ model RefreshToken {
   tokenHash String    @unique
   expiresAt DateTime
   revokedAt DateTime?
+  /// Set when the token was exchanged for a new one; reuse after this signals theft.
+  rotatedAt DateTime?
   createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

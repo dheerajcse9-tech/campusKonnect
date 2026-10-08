@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { requireAuth } from '../../middleware/auth.js';
 import { authLimiter } from '../../middleware/rate-limit.js';
 import * as controller from './auth.controller.js';
 
@@ -12,3 +13,4 @@ authRouter.post('/refresh', controller.refresh);
 authRouter.post('/logout', controller.logout);
 authRouter.post('/forgot-password', authLimiter, controller.forgotPassword);
 authRouter.post('/reset-password', authLimiter, controller.resetPassword);
+authRouter.post('/change-password', authLimiter, requireAuth, controller.changePassword);

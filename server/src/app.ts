@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import path from 'node:path';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { env } from './config/env.js';
+import { LOCAL_UPLOAD_DIR } from './lib/storage/storage.service.js';
 import { logger } from './lib/logger.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { apiLimiter } from './middleware/rate-limit.js';
@@ -44,7 +44,7 @@ export function createApp(): Express {
   app.use(cookieParser());
 
   // Locally stored uploads (only used when Cloudinary is not configured).
-  app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads'), { maxAge: '7d' }));
+  app.use('/uploads', express.static(LOCAL_UPLOAD_DIR, { maxAge: '7d' }));
 
   app.use('/api', apiLimiter, buildApiRouter());
 
