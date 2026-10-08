@@ -129,9 +129,11 @@ export function AppLayout() {
             </NavLink>
           </nav>
           <div className="ml-auto flex items-center gap-3">
-            <ButtonLink to="/listings/new" size="sm" className="hidden md:inline-flex">
-              <Plus className="size-4" /> Sell or rent
-            </ButtonLink>
+            <div className="hidden md:block">
+              <ButtonLink to="/listings/new" size="sm">
+                <Plus className="size-4" /> Sell or rent
+              </ButtonLink>
+            </div>
             <Link
               to="/notifications"
               className="relative rounded-full p-2 text-slate-600 hover:bg-slate-100"
