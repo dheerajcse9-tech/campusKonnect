@@ -47,21 +47,37 @@ const PLACEHOLDER_SECRET = 'change-me-to-a-long-random-string-of-at-least-32-cha
  */
 const productionSchema = envSchema.superRefine((env, ctx) => {
   if (env.NODE_ENV !== 'production') return;
-  const require = (ok: unknown, path: string, message: string) => {
+  const check = (ok: unknown, path: string, message: string) => {
     if (!ok) ctx.addIssue({ code: 'custom', path: [path], message });
   };
-  require(env.JWT_ACCESS_SECRET !== PLACEHOLDER_SECRET &&
-    env.JWT_ACCESS_SECRET.length >=
-      48, 'JWT_ACCESS_SECRET', 'must be a unique random secret of at least 48 characters in production');
-  require(env.RESEND_API_KEY, 'RESEND_API_KEY', 'is required in production to send verification emails');
-  require(env.CLOUDINARY_CLOUD_NAME &&
-    env.CLOUDINARY_API_KEY &&
-    env.CLOUDINARY_API_SECRET, 'CLOUDINARY_*', 'Cloudinary credentials are required in production (local disk is not persistent)');
-  require(env.APP_URL.startsWith('https://'), 'APP_URL', 'must use https in production');
-  require(env.API_URL.startsWith('https://'), 'API_URL', 'must use https in production');
-  require(env.CLIENT_ORIGIN.every((origin) =>
-    origin.startsWith('https://'),
-  ), 'CLIENT_ORIGIN', 'must only contain https origins in production');
+
+  // 43 base64 characters = 256 bits (e.g. Render's generated secrets, `openssl rand -base64 32`).
+  const strongSecret =
+    env.JWT_ACCESS_SECRET !== PLACEHOLDER_SECRET && env.JWT_ACCESS_SECRET.length >= 43;
+  check(
+    strongSecret,
+    'JWT_ACCESS_SECRET',
+    'must be a unique random secret of at least 256 bits (43+ characters)',
+  );
+
+  check(
+    env.RESEND_API_KEY,
+    'RESEND_API_KEY',
+    'is required in production to send verification emails',
+  );
+
+  const cloudinary =
+    env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET;
+  check(
+    cloudinary,
+    'CLOUDINARY_*',
+    'Cloudinary credentials are required in production (local disk is not persistent)',
+  );
+
+  check(env.APP_URL.startsWith('https://'), 'APP_URL', 'must use https in production');
+  check(env.API_URL.startsWith('https://'), 'API_URL', 'must use https in production');
+  const httpsOrigins = env.CLIENT_ORIGIN.every((origin) => origin.startsWith('https://'));
+  check(httpsOrigins, 'CLIENT_ORIGIN', 'must only contain https origins in production');
 });
 
 export type Env = z.infer<typeof envSchema>;

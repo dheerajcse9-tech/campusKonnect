@@ -43,7 +43,7 @@ College networks usually put hundreds of students behind a few public IP address
 
 ## 6.4 Operational checklist
 
-- [ ] Generate `JWT_ACCESS_SECRET` with at least 48 random bytes. Never reuse it across environments.
+- [ ] Generate `JWT_ACCESS_SECRET` with at least 256 bits of randomness (`openssl rand -base64 48`). Never reuse it across environments.
 - [ ] Set `ALLOWED_EMAIL_DOMAINS` to the college's real student domains only.
 - [ ] Verify the sending domain in Resend (SPF/DKIM) so verification emails don't land in spam.
 - [ ] Use `COOKIE_SAMESITE=none` only when the web app and API are on different sites. It needs HTTPS.

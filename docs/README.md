@@ -8,4 +8,5 @@
 | 4   | [API design](04-api-design.md)                               |
 | 5   | [Engineering process and quality](05-engineering-process.md) |
 | 6   | [Security and privacy](06-security-and-privacy.md)           |
+| 7   | [Deployment guide](07-deployment.md)                         |
 | ADR | [Architecture decision records](adr/)                        |

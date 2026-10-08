@@ -38,7 +38,7 @@ describe('environment validation', () => {
     const stderr = loadEnvWith({
       ...base,
       NODE_ENV: 'production',
-      JWT_ACCESS_SECRET: 'a'.repeat(64),
+      JWT_ACCESS_SECRET: 'a'.repeat(44), // length of a Render-generated 256-bit secret
       RESEND_API_KEY: 're_test',
       CLOUDINARY_CLOUD_NAME: 'demo',
       CLOUDINARY_API_KEY: 'key',

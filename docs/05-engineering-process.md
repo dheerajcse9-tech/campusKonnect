@@ -9,7 +9,7 @@ The implementation roadmap has six phases, and each is locked in before the next
 | A Foundation | Requirements, prototype, presentation  | `docs/01-requirements.md`   |
 | B Design     | Architecture, database, API, UI/UX     | `docs/02`–`04`, `docs/adr/` |
 | C Build      | MVP, module by module, tested as we go | `server/`, `client/`        |
-| D Ship       | Deploy, pilot with real students       | `docs/06-deployment.md`     |
+| D Ship       | Deploy, pilot with real students       | `docs/07-deployment.md`     |
 | E Grow       | College-wide launch, monitor, scale    |                             |
 | F Beyond     | Multi-college, if the model proves out |                             |
 

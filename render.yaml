@@ -1,0 +1,48 @@
+# Render Blueprint for the CampusKonnect API.
+# Dashboard → New → Blueprint → pick this repository. Secrets marked `sync: false`
+# are entered in the dashboard and never committed.
+services:
+  - type: web
+    name: campuskonnect-api
+    runtime: node
+    region: singapore # closest Render region to India
+    plan: starter # the free plan sleeps after inactivity, which makes the first request slow
+    rootDir: .
+    buildCommand: npm ci --include=dev && npm run build -w server
+    preDeployCommand: npm run db:deploy -w server
+    startCommand: npm run start -w server
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: '22'
+      # Requests arrive via the Vercel rewrite and then Render's load balancer.
+      - key: TRUST_PROXY
+        value: '2'
+      # Same-origin through the Vercel /api rewrite, so first-party cookies work everywhere (incl. Safari).
+      - key: COOKIE_SAMESITE
+        value: lax
+      - key: DATABASE_URL
+        sync: false # Neon (recommended) or Render PostgreSQL connection string, with ?sslmode=require
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: ALLOWED_EMAIL_DOMAINS
+        sync: false # e.g. yourcollege.edu.in
+      - key: APP_URL
+        sync: false # e.g. https://campuskonnect.vercel.app
+      - key: API_URL
+        sync: false # same as APP_URL when using the Vercel rewrite
+      - key: CLIENT_ORIGIN
+        sync: false # same as APP_URL (comma-separate extra origins)
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false # e.g. CampusKonnect <no-reply@yourdomain.in>
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
