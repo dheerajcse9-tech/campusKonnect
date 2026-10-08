@@ -7,6 +7,8 @@ export interface AuthState {
   login: (email: string, password: string) => Promise<Me>;
   logout: () => Promise<void>;
   setUser: (user: Me) => void;
+  /** Drops the local session without calling the API (e.g. after account deletion). */
+  clearSession: () => void;
 }
 
 export const AuthContext = createContext<AuthState | null>(null);

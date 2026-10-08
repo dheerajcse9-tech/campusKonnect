@@ -36,6 +36,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [queryClient]);
 
-  const value = useMemo<AuthState>(() => ({ user, login, logout, setUser }), [user, login, logout]);
+  const clearSession = useCallback(() => {
+    setAccessToken(null);
+    setUser(null);
+    queryClient.clear();
+  }, [queryClient]);
+
+  const value = useMemo<AuthState>(
+    () => ({ user, login, logout, setUser, clearSession }),
+    [user, login, logout, clearSession],
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

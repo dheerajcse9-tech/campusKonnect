@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router';
-import { GuestOnly, RequireAuth } from './auth/guards';
+import { GuestOnly, RequireAdmin, RequireAuth } from './auth/guards';
 import { AppLayout } from './components/layout/AppLayout';
 import { CheckEmailPage } from './pages/auth/CheckEmailPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
@@ -19,6 +19,13 @@ import { RequestsPage } from './pages/requests/RequestsPage';
 import { CommunityPage } from './pages/community/CommunityPage';
 import { PostDetailPage } from './pages/community/PostDetailPage';
 import { EditPostPage, NewPostPage } from './pages/community/PostFormPage';
+import { AdminAuditPage } from './pages/admin/AdminAuditPage';
+import { AdminLayout } from './pages/admin/AdminLayout';
+import { AdminOverviewPage } from './pages/admin/AdminOverviewPage';
+import { AdminReportsPage } from './pages/admin/AdminReportsPage';
+import { AdminUsersPage } from './pages/admin/AdminUsersPage';
+import { ProfilePage } from './pages/profile/ProfilePage';
+import { UserProfilePage } from './pages/profile/UserProfilePage';
 import { GuidelinesPage } from './pages/misc/GuidelinesPage';
 import { NotFoundPage } from './pages/misc/NotFoundPage';
 
@@ -71,6 +78,21 @@ export function App() {
           <Route path="community/new" element={<NewPostPage />} />
           <Route path="community/:id" element={<PostDetailPage />} />
           <Route path="community/:id/edit" element={<EditPostPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="users/:id" element={<UserProfilePage />} />
+          <Route
+            path="admin"
+            element={
+              <RequireAdmin>
+                <AdminLayout />
+              </RequireAdmin>
+            }
+          >
+            <Route index element={<AdminOverviewPage />} />
+            <Route path="reports" element={<AdminReportsPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="audit" element={<AdminAuditPage />} />
+          </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
