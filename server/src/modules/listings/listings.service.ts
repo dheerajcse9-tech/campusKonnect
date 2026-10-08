@@ -6,14 +6,14 @@ import { prisma } from '../../lib/prisma.js';
 import { requireImage } from '../../lib/storage/image.js';
 import { storageService } from '../../lib/storage/storage.service.js';
 import { MAX_LISTING_IMAGES } from '../../middleware/upload.js';
+import { OPEN_REQUEST_STATUSES } from '../transactions/request-state.js';
+import { closeOpenRequests } from '../transactions/transactions.service.js';
 import { listingCardSelect, listingDetailSelect } from './listing.mapper.js';
 import type {
   CreateListingInput,
   ListListingsQuery,
   UpdateListingInput,
 } from './listings.schemas.js';
-
-const OPEN_REQUEST_STATUSES = ['PENDING', 'APPROVED'] as const;
 
 async function uploadImages(buffers: Buffer[]) {
   // Validate every file before uploading any, so a bad file doesn't leave orphans behind.
@@ -186,10 +186,15 @@ export async function setStatus(listingId: string, actor: Actor, status: 'ACTIVE
   if (listing.status === 'RESERVED') {
     throw new ConflictError('This listing has an approved request. Complete or cancel it first.');
   }
-  return prisma.listing.update({
-    where: { id: listingId },
-    data: { status },
-    select: listingDetailSelect,
+  return prisma.$transaction(async (tx) => {
+    if (status === 'SOLD') {
+      await closeOpenRequests(tx, listingId, 'REJECTED', 'was sold elsewhere');
+    }
+    return tx.listing.update({
+      where: { id: listingId },
+      data: { status },
+      select: listingDetailSelect,
+    });
   });
 }
 
@@ -205,7 +210,10 @@ export async function deleteListing(listingId: string, actor: Actor): Promise<vo
 
   const requestCount = await prisma.transactionRequest.count({ where: { listingId } });
   if (requestCount > 0) {
-    await prisma.listing.update({ where: { id: listingId }, data: { status: 'REMOVED' } });
+    await prisma.$transaction(async (tx) => {
+      await closeOpenRequests(tx, listingId, 'CANCELLED', 'was removed by the seller');
+      await tx.listing.update({ where: { id: listingId }, data: { status: 'REMOVED' } });
+    });
     return;
   }
 
